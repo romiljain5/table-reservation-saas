@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Restaurant {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tables       Table[]
+  reservations Reservation[]
+  admins       User[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String?
+  role         UserRole @default(CUSTOMER)
+  restaurantId String?
+  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
+
+  reservations Reservation[]
+}
+
+model Table {
+  id           String   @id @default(cuid())
+  name         String
+  seats        Int
+  restaurantId String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  reservations Reservation[]
+}
+
+model Reservation {
+  id           String              @id @default(cuid())
+  guestName    String
+  phone        String
+  partySize    Int
+  date         DateTime
+  time         String
+  status       ReservationStatus   @default(PENDING)
+
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  userId       String?
+  user         User?               @relation(fields: [userId], references: [id])
+
+  tableId      String?
+  table        Table?              @relation(fields: [tableId], references: [id])
+
+  restaurantId String
+  restaurant   Restaurant          @relation(fields: [restaurantId], references: [id])
+}
+
+enum UserRole {
+  OWNER
+  MANAGER
+  STAFF
+  CUSTOMER
+}
+
+enum ReservationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+  NO_SHOW
+}

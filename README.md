@@ -34,3 +34,31 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+### Commands and tools
+- npx prisma studio
+- npx prisma migrate dev --name init -> sync db with schema
+- node prisma/seed.js - to run seeder file
+- also pls install postgres
+- shadcn - used for ui components
+- Zustand - for state management
+- prisma - ORM
+
+
+### Dependencies
+```bash
+✔ Next.js 
+✔ Tailwind + ShadCN
+✔ Prisma + PostgreSQL
+✔ Multi-tenant schema
+✔ Reservation API
+✔ Deployment pipeline
+```
+
+### TODOs
+- Full Dashboard UI (Figma + code)
+- Restaurant onboarding system
+- Booking widget (calendar + time selector)
+- Admin real-time tables map (drag & drop)
+- API endpoints list (complete documentation)
+- POS Integration starter

@@ -1,0 +1,38 @@
+export const dummyReservations = [
+  {
+    id: "RES-1023",
+    guestName: "Anjalii Mehta",
+    partySize: 4,
+    time: "7:30 PM",
+    restaurant: "Clayton Downtown",
+    status: "Confirmed",
+    source: "Online",
+  },
+  {
+    id: "RES-1024",
+    guestName: "Rahul Verma",
+    partySize: 2,
+    time: "8:00 PM",
+    restaurant: "Riverfront",
+    status: "Seated",
+    source: "Walk-in",
+  },
+  {
+    id: "RES-1025",
+    guestName: "Emily Carter",
+    partySize: 5,
+    time: "8:15 PM",
+    restaurant: "Clayton Downtown",
+    status: "Pending",
+    source: "Phone",
+  },
+  {
+    id: "RES-1026",
+    guestName: "Sanjay Patel",
+    partySize: 6,
+    time: "9:00 PM",
+    restaurant: "Airport",
+    status: "Cancelled",
+    source: "Online",
+  },
+];
