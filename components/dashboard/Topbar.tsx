@@ -1,4 +1,5 @@
 "use client";
+import RestaurantSwitcher from "./RestaurantSwitcher";
 
 export default function Topbar() {
   return (
@@ -14,9 +15,10 @@ export default function Topbar() {
 
       {/* Right side – we’ll hook this into auth later */}
       <div className="flex items-center gap-3">
-        <button className="hidden md:inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50">
+        {/* <button className="hidden md:inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50">
           Switch restaurant
-        </button>
+        </button> */}
+        <RestaurantSwitcher />
 
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-full bg-slate-200" />

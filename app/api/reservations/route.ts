@@ -28,10 +28,37 @@ export async function POST(req: Request) {
 }
 
 // GET reservations (READ)
-export async function GET() {
+// export async function GET() {
+//   try {
+//     const reservations = await prisma.reservation.findMany({
+//       orderBy: { date: "desc" },
+//       include: {
+//         restaurant: true,
+//         user: true,
+//         table: true,
+//       },
+//     });
+
+//     return NextResponse.json(reservations);
+//   } catch (error) {
+//     console.error("Reservation GET error:", error);
+//     return NextResponse.json(
+//       { error: "Error fetching reservations" },
+//       { status: 500 }
+//     );
+//   }
+// }
+
+export async function GET(req: Request) {
   try {
+    const { searchParams } = new URL(req.url);
+    const restaurantId = searchParams.get("restaurantId");
+
     const reservations = await prisma.reservation.findMany({
-      orderBy: { date: "desc" },
+      where: restaurantId ? { restaurantId } : {},
+      orderBy: {
+        date: "asc",
+      },
       include: {
         restaurant: true,
         user: true,
@@ -40,11 +67,9 @@ export async function GET() {
     });
 
     return NextResponse.json(reservations);
+
   } catch (error) {
-    console.error("Reservation GET error:", error);
-    return NextResponse.json(
-      { error: "Error fetching reservations" },
-      { status: 500 }
-    );
+    console.error(error);
+    return NextResponse.json({ error: "Error fetching reservations" }, { status: 500 });
   }
 }

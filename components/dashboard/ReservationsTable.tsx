@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useRestaurantStore } from "@/store/restaurantStore";
+import { useQuery } from "@tanstack/react-query";
 
 function statusChipClass(status: string) {
   switch (status) {
@@ -18,26 +19,18 @@ function statusChipClass(status: string) {
 }
 
 export default function ReservationsTable() {
-  const [reservations, setReservations] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { restaurantId } = useRestaurantStore();
 
-  useEffect(() => {
-    async function loadReservations() {
-      try {
-        const res = await fetch("/api/reservations");
-        const data = await res.json();
-        setReservations(data);
-      } catch (err) {
-        console.error("Error loading reservations", err);
-      } finally {
-        setLoading(false);
-      }
-    }
+  const { data: reservations = [], isLoading } = useQuery({
+    queryKey: ["reservations", restaurantId],
+    queryFn: async () => {
+      const res = await fetch(`/api/reservations?restaurantId=${restaurantId}`);
+      return res.json();
+    },
+    enabled: !!restaurantId, // fetch only when restaurant is selected
+  });
 
-    loadReservations();
-  }, []);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="p-6 text-center text-slate-500">
         Loading reservations...
@@ -48,7 +41,7 @@ export default function ReservationsTable() {
   if (reservations.length === 0) {
     return (
       <div className="p-6 text-center text-slate-500">
-        No reservations found.
+        No reservations found for this restaurant.
       </div>
     );
   }
@@ -58,43 +51,39 @@ export default function ReservationsTable() {
       <table className="min-w-full text-left text-sm">
         <thead className="bg-slate-50">
           <tr className="border-b border-slate-200">
-            <th className="px-4 py-2 font-medium text-slate-500">Reservation</th>
-            <th className="px-4 py-2 font-medium text-slate-500">Guest</th>
-            <th className="px-4 py-2 font-medium text-slate-500">Time</th>
-            <th className="px-4 py-2 font-medium text-slate-500">Restaurant</th>
-            <th className="px-4 py-2 font-medium text-slate-500">Status</th>
+            <th className="px-4 py-2">Reservation</th>
+            <th className="px-4 py-2">Guest</th>
+            <th className="px-4 py-2">Time</th>
+            <th className="px-4 py-2">Restaurant</th>
+            <th className="px-4 py-2">Status</th>
           </tr>
         </thead>
         <tbody>
-          {reservations.map((res) => (
+          {reservations.map((res: any) => (
             <tr
               key={res.id}
               className="border-b border-slate-100 last:border-none hover:bg-slate-50/60"
             >
-              <td className="px-4 py-2 align-middle text-xs text-slate-500">
-                <div className="font-mono text-[11px] uppercase tracking-wide">
-                  {res.id}
-                </div>
+              <td className="px-4 py-2 font-mono text-[11px] uppercase">
+                {res.id}
               </td>
 
-              <td className="px-4 py-2 align-middle">
-                <div className="text-sm font-medium text-slate-800">
-                  {res.guestName}
-                </div>
+              <td className="px-4 py-2">
+                <div className="text-sm font-medium">{res.guestName}</div>
                 <div className="text-xs text-slate-500">
                   Party of {res.partySize}
                 </div>
               </td>
 
-              <td className="px-4 py-2 align-middle text-sm text-slate-700">
+              <td className="px-4 py-2">
                 {res.time} — {new Date(res.date).toLocaleDateString()}
               </td>
 
-              <td className="px-4 py-2 align-middle text-sm text-slate-700">
+              <td className="px-4 py-2">
                 {res.restaurant?.name || "Unknown"}
               </td>
 
-              <td className="px-4 py-2 align-middle">
+              <td className="px-4 py-2">
                 <span
                   className={
                     "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium " +
