@@ -17,6 +17,8 @@ import { useRestaurantStore } from "@/store/restaurantStore";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import useSound from "use-sound";
 
 const tableSchema = z.object({
   name: z.string().min(1, "Table name is required"),
@@ -27,6 +29,7 @@ export default function AddTableModal() {
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const { restaurantId } = useRestaurantStore();
+  const [play] = useSound("/sounds/success.mp3");
 
   const form = useForm({
     resolver: zodResolver(tableSchema),
@@ -37,19 +40,24 @@ export default function AddTableModal() {
   });
 
   const onSubmit = async (values: any) => {
-    await fetch("/api/tables", {
-      method: "POST",
-      body: JSON.stringify({
-        ...values,
-        restaurantId,
-      }),
-    });
+    try {
+      await fetch("/api/tables", {
+        method: "POST",
+        body: JSON.stringify({
+          ...values,
+          restaurantId,
+        }),
+      });
+      play();
+      toast.success("Table added successfully!");
+      // Refresh table list
+      queryClient.invalidateQueries(["tables", restaurantId]);
 
-    // Refresh table list
-    queryClient.invalidateQueries(["tables", restaurantId]);
-
-    setOpen(false);
-    form.reset();
+      setOpen(false);
+      form.reset();
+    } catch (error) {
+      toast.error("Failed to add table");
+    }
   };
 
   return (
@@ -63,17 +71,11 @@ export default function AddTableModal() {
           <DialogTitle>Add Table</DialogTitle>
         </DialogHeader>
 
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-4 py-4"
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
           {/* Table Name */}
           <div>
             <label className="block text-sm font-medium">Table Name</label>
-            <Input
-              {...form.register("name")}
-              placeholder="Table 1"
-            />
+            <Input {...form.register("name")} placeholder="Table 1" />
           </div>
 
           {/* Seats */}

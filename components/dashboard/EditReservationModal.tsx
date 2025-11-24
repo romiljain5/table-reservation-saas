@@ -24,6 +24,8 @@ import {
   SelectItem,
   SelectContent,
 } from "@/components/ui/select";
+import { toast } from "sonner";
+import useSound from "use-sound";
 
 const schema = z.object({
   guestName: z.string().min(2),
@@ -42,6 +44,7 @@ export default function EditReservationModal({
   const [open, setOpen] = useState(false);
   const queryClient = useQueryClient();
   const { restaurantId } = useRestaurantStore();
+const [play] = useSound("/sounds/success.mp3");
 
   const form = useForm({
     resolver: zodResolver(schema),
@@ -56,17 +59,22 @@ export default function EditReservationModal({
   });
 
   const onSubmit = async (values: any) => {
-    await fetch(`/api/reservations/${reservation.id}`, {
-      method: "PATCH",
-      body: JSON.stringify({
-        ...values,
-        restaurantId,
-      }),
-    });
+    try {
+      await fetch(`/api/reservations/${reservation.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          ...values,
+          restaurantId,
+        }),
+      });
 
-    queryClient.invalidateQueries(["reservations", restaurantId]);
-
-    setOpen(false);
+      queryClient.invalidateQueries(["reservations", restaurantId]);
+      play();
+      toast.success("Reservation updated!");
+      setOpen(false);
+    } catch (error) {
+      toast.error("Unable to update reservation");
+    }
   };
 
   return (

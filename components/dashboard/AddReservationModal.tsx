@@ -31,6 +31,7 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "sonner";
 
 const reservationSchema = z.object({
   guestName: z.string().min(2, "Guest name is required"),
@@ -85,10 +86,12 @@ export default function AddReservationModal() {
 
       if (!res.ok) throw new Error("Failed to create reservation");
 
+      toast.success("Reservation created successfully!");
       setOpen(false);
       form.reset();
       // Optional: trigger table refresh, optimistic UI, toast notifications
     } catch (error) {
+      toast.error("Failed to create reservation");
       console.error(error);
     }
   };
