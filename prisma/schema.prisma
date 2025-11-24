@@ -81,4 +81,5 @@ enum ReservationStatus {
   CANCELLED
   COMPLETED
   NO_SHOW
+  SEATED
 }

@@ -2,17 +2,23 @@
 
 import { useRestaurantStore } from "@/store/restaurantStore";
 import { useQuery } from "@tanstack/react-query";
+import EditReservationModal from "./EditReservationModal";
+import StatusActions from "./StatusActions";
 
 function statusChipClass(status: string) {
   switch (status) {
     case "CONFIRMED":
       return "bg-emerald-50 text-emerald-700 border-emerald-100";
-    case "COMPLETED":
-      return "bg-blue-50 text-blue-700 border-blue-100";
     case "PENDING":
       return "bg-amber-50 text-amber-700 border-amber-100";
     case "CANCELLED":
       return "bg-rose-50 text-rose-700 border-rose-100";
+    case "COMPLETED":
+      return "bg-blue-50 text-blue-700 border-blue-100";
+    case "NO_SHOW":
+      return "bg-orange-50 text-orange-700 border-orange-100";
+    case "SEATED":
+      return "bg-purple-50 text-purple-700 border-purple-100";
     default:
       return "bg-slate-50 text-slate-700 border-slate-100";
   }
@@ -56,6 +62,7 @@ export default function ReservationsTable() {
             <th className="px-4 py-2">Time</th>
             <th className="px-4 py-2">Restaurant</th>
             <th className="px-4 py-2">Status</th>
+            <th className="px-4 py-2 font-medium text-slate-500">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -79,9 +86,7 @@ export default function ReservationsTable() {
                 {res.time} — {new Date(res.date).toLocaleDateString()}
               </td>
 
-              <td className="px-4 py-2">
-                {res.restaurant?.name || "Unknown"}
-              </td>
+              <td className="px-4 py-2">{res.restaurant?.name || "Unknown"}</td>
 
               <td className="px-4 py-2">
                 <span
@@ -93,6 +98,13 @@ export default function ReservationsTable() {
                   {res.status}
                 </span>
               </td>
+              <td className="px-4 py-2">
+                <EditReservationModal reservation={res} />
+              </td>
+              <td className="px-4 py-2 space-x-2">
+                <StatusActions reservation={res} />
+              </td>
+
             </tr>
           ))}
         </tbody>
