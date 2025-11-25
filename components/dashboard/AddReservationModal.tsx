@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dialog";
 
 import { Button } from "@/components/ui/button";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,6 +33,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import useSound from "use-sound";
 
 const reservationSchema = z.object({
   guestName: z.string().min(2, "Guest name is required"),
@@ -49,6 +51,8 @@ export default function AddReservationModal() {
 
   const [restaurants, setRestaurants] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
+    const [play] = useSound("/sounds/success.mp3");
 
   useEffect(() => {
     async function loadRestaurants() {
@@ -86,9 +90,12 @@ export default function AddReservationModal() {
 
       if (!res.ok) throw new Error("Failed to create reservation");
 
+      play();
       toast.success("Reservation created successfully!");
       setOpen(false);
       form.reset();
+      // 🔥 REFRESH reservations list
+      queryClient.invalidateQueries(["reservations", values.restaurantId]);
       // Optional: trigger table refresh, optimistic UI, toast notifications
     } catch (error) {
       toast.error("Failed to create reservation");

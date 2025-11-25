@@ -9,6 +9,8 @@ export default async function Topbar({ children }: { children: ReactNode }) {
 
   if (!session) redirect("/login");
 
+  const user = session.user;
+
   return (
     <header className="h-16 border-b border-slate-200 bg-white/70 backdrop-blur-sm flex items-center justify-between px-4 lg:px-6">
       <div className="flex items-center gap-2">
@@ -20,20 +22,24 @@ export default async function Topbar({ children }: { children: ReactNode }) {
         </span>
       </div>
 
-      {/* Right side – we’ll hook this into auth later */}
       <div className="flex items-center gap-3">
-        {/* <button className="hidden md:inline-flex items-center rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-50">
-          Switch restaurant
-        </button> */}
+
         <RestaurantSwitcher />
 
-        {/* Only show logout if authenticated */}
-        {session?.user && <LogoutButton />}
+        {/* Logout */}
+        {user && <LogoutButton />}
+
+        {/* User Info */}
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-full bg-slate-200" />
+          <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-l font-semibold text-slate-600">
+            {user.name ? user.name[0].toUpperCase() : "U"}
+          </div>
+
           <div className="text-xs leading-tight">
-            <div className="font-medium text-slate-700">Admin User</div>
-            <div className="text-slate-400">admin@yourapp.com</div>
+            <div className="font-medium text-slate-700">
+              {user.name || "User"}
+            </div>
+            <div className="text-slate-400">{user.email}</div>
           </div>
         </div>
       </div>

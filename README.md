@@ -37,13 +37,16 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ### Commands and tools
 - npx prisma studio
-- npx prisma migrate dev --name init -> sync db with schema
+- npx prisma migrate dev --name init -> to create migration files
+- npx prisma migrate reset --> to reset and migrate files
+- npx prisma generate -> to generate prisma
 - node prisma/seed.js - to run seeder file
 - also pls install postgres
 - shadcn - used for ui components
 - Zustand - for state management
 - prisma - ORM
 - openssl rand -base64 32 --> to generate NEXTAUTH_SECRET and save in .env
+
 
 ### Dependencies
 ```bash

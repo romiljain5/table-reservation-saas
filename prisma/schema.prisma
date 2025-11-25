@@ -92,6 +92,24 @@ model Reservation {
 
   restaurantId String
   restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  customerId String?
+  customer   Customer?  @relation(fields: [customerId], references: [id])
+}
+
+model Customer {
+  id          String      @id @default(cuid())
+  name        String
+  phone       String      @unique 
+  email       String?     @unique
+  notes       String?
+  tags        String[]    // e.g. ["VIP", "Allergy: Nuts"]
+  visits      Int         @default(0)
+  lastVisit   DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  reservations Reservation[]
 }
 
 enum UserRole {
