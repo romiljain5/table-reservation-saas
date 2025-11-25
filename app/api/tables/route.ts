@@ -26,6 +26,7 @@ export async function POST(req: Request) {
       data: {
         name: body.name,
         seats: body.seats,
+        number: body.number,
         restaurantId: body.restaurantId,
       },
     });

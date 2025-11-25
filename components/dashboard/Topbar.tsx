@@ -1,7 +1,14 @@
-"use client";
+import { ReactNode } from "react";
+import LogoutButton from "./LogoutButton";
 import RestaurantSwitcher from "./RestaurantSwitcher";
+import { getServerSession } from "next-auth";
+import { redirect } from "next/navigation";
 
-export default function Topbar() {
+export default async function Topbar({ children }: { children: ReactNode }) {
+  const session = await getServerSession();
+
+  if (!session) redirect("/login");
+
   return (
     <header className="h-16 border-b border-slate-200 bg-white/70 backdrop-blur-sm flex items-center justify-between px-4 lg:px-6">
       <div className="flex items-center gap-2">
@@ -20,6 +27,8 @@ export default function Topbar() {
         </button> */}
         <RestaurantSwitcher />
 
+        {/* Only show logout if authenticated */}
+        {session?.user && <LogoutButton />}
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-full bg-slate-200" />
           <div className="text-xs leading-tight">

@@ -43,7 +43,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 - shadcn - used for ui components
 - Zustand - for state management
 - prisma - ORM
-
+- openssl rand -base64 32 --> to generate NEXTAUTH_SECRET and save in .env
 
 ### Dependencies
 ```bash
@@ -62,3 +62,13 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 - Admin real-time tables map (drag & drop)
 - API endpoints list (complete documentation)
 - POS Integration starter
+
+### Rbac info
+```
+Role	Permissions
+OWNER	Full access
+MANAGER	Manage staff, tables, reservations
+HOST	Only reservations & seating
+WAITER	View reservations only
+CUSTOMER	Only booking widget (later)
+```

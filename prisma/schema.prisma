@@ -41,7 +41,8 @@ model User {
   id           String      @id @default(cuid())
   email        String      @unique
   name         String?
-  role         UserRole    @default(CUSTOMER)
+  role         UserRole    @default(STAFF)
+  password     String
   restaurantId String?
   restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
 
@@ -98,6 +99,8 @@ enum UserRole {
   MANAGER
   STAFF
   CUSTOMER
+  HOST
+  SERVER
 }
 
 enum ReservationStatus {

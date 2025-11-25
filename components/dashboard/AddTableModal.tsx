@@ -23,6 +23,7 @@ import useSound from "use-sound";
 const tableSchema = z.object({
   name: z.string().min(1, "Table name is required"),
   seats: z.number().min(1, "Seats must be at least 1"),
+  number: z.number().min(1, "Seats must be at least 1"),
 });
 
 export default function AddTableModal() {
@@ -85,6 +86,17 @@ export default function AddTableModal() {
               type="number"
               min={1}
               {...form.register("seats", { valueAsNumber: true })}
+            />
+          </div>
+
+
+          {/* number */}
+          <div>
+            <label className="block text-sm font-medium">Table Number</label>
+            <Input
+              type="number"
+              min={1}
+              {...form.register("number", { valueAsNumber: true })}
             />
           </div>
 

@@ -9,6 +9,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { useEffect } from "react";
 
 export default function RestaurantSwitcher() {
   const { restaurantId, restaurantName, setRestaurant } = useRestaurantStore();
@@ -21,9 +22,17 @@ export default function RestaurantSwitcher() {
     },
   });
 
-  if (isLoading) return <div>Loading...</div>;
 
   const restaurants = data || [];
+  // 🚀 Auto-select first restaurant only once
+  useEffect(() => {
+    if (!isLoading && restaurants.length > 0 && !restaurantId) {
+      const first = restaurants[0];
+      setRestaurant(first.id, first.name);
+    }
+  }, [isLoading, restaurants, restaurantId, setRestaurant]);
+
+  if (isLoading) return <div>Loading...</div>;
 
   return (
     <Select
