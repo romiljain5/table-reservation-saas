@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -16,13 +16,14 @@ import { useRestaurantStore } from "@/store/restaurantStore";
 import { toast } from "sonner";
 import useSound from "use-sound";
 
-export function AssignTableDialog({ trigger, reservation }: any) {
+export function AssignTableDialog({ trigger, reservation }) {
   const [open, setOpen] = useState(false);
   const [tableId, setTableId] = useState("");
   const { restaurantId } = useRestaurantStore();
 
   const [play] = useSound("/sounds/success.mp3");
   const queryClient = useQueryClient();
+
   // Fetch tables
   const { data: tables = [] } = useQuery({
     queryKey: ["tables", restaurantId],
@@ -30,7 +31,38 @@ export function AssignTableDialog({ trigger, reservation }: any) {
       const res = await fetch(`/api/tables?restaurantId=${restaurantId}`);
       return res.json();
     },
+    enabled: !!restaurantId,
   });
+
+  // Fetch reservations for table availability mapping
+  const { data: reservations = [] } = useQuery({
+    queryKey: ["reservations", restaurantId],
+    queryFn: async () => {
+      const res = await fetch(`/api/reservations?restaurantId=${restaurantId}`);
+      return res.json();
+    },
+    enabled: !!restaurantId,
+  });
+
+  // Build table status map (same as TableLayout)
+  const tableStatusMap = useMemo(() => {
+    const PRIORITY = { SEATED: 3, CONFIRMED: 2, PENDING: 1 };
+    const map: any = {};
+
+    reservations.forEach((r) => {
+      if (!r.tableId) return;
+
+      const newPriority = PRIORITY[r.status];
+      const current = map[r.tableId];
+      const currentPriority = current ? PRIORITY[current.status] : 0;
+
+      if (newPriority > currentPriority) {
+        map[r.tableId] = r.status;
+      }
+    });
+
+    return map;
+  }, [reservations]);
 
   const seatGuest = async () => {
     if (!tableId) {
@@ -42,10 +74,13 @@ export function AssignTableDialog({ trigger, reservation }: any) {
       method: "PATCH",
       body: JSON.stringify({ tableId }),
     });
+
     queryClient.invalidateQueries(["reservations", restaurantId]);
+    queryClient.invalidateQueries(["tables", restaurantId]);
 
     play();
     toast.success("Guest Seated");
+
     setOpen(false);
   };
 
@@ -56,9 +91,7 @@ export function AssignTableDialog({ trigger, reservation }: any) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Assign Table</DialogTitle>
-          <DialogDescription>
-            Choose a table to seat the guest.
-          </DialogDescription>
+          <DialogDescription>Select a table for this guest.</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-2 py-2">
@@ -68,12 +101,22 @@ export function AssignTableDialog({ trigger, reservation }: any) {
             value={tableId}
             onChange={(e) => setTableId(e.target.value)}
           >
-            <option value="">Select table</option>
-            {tables.map((table: any) => (
-              <option key={table.id} value={table.id}>
-                Table {table.number} — {table.capacity} seats
-              </option>
-            ))}
+            <option value="">Select a table</option>
+
+            {tables.map((table) => {
+              const status = tableStatusMap[table.id] || "AVAILABLE";
+
+              return (
+                <option
+                  key={table.id}
+                  value={table.id}
+                  disabled={status === "SEATED"}
+                >
+                  Table {table.name} — {table.seats} seats
+                  {status !== "AVAILABLE" ? ` (${status})` : ""}
+                </option>
+              );
+            })}
           </select>
         </div>
 

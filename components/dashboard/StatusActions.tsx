@@ -9,10 +9,12 @@ import { toast } from "sonner";
 import useSound from "use-sound";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { AssignTableDialog } from "../reservations/AssignTableDialog";
+import { allowedActions } from "@/lib/reservationRules";
 
 export default function StatusActions({ reservation }: { reservation: any }) {
   const queryClient = useQueryClient();
   const { restaurantId } = useRestaurantStore();
+  const allowed = allowedActions(reservation.status);
 
   const [play] = useSound("/sounds/success.mp3");
   const updateStatus = async (status: string) => {
@@ -45,49 +47,33 @@ export default function StatusActions({ reservation }: { reservation: any }) {
       </Button>
 
       {/* CONFIRMED */}
-      <Button
+      {allowed.includes("CONFIRM") && <Button
         size="xs"
         className="bg-emerald-100 text-emerald-700 border border-emerald-300 hover:bg-emerald-200 px-1"
         disabled={reservation.status === "CONFIRMED"}
         onClick={() => updateStatus("CONFIRMED")}
       >
         <Check className="w-3 h-3 " /> Confirmed
-      </Button>
+      </Button>}
 
       {/* SEATED */}
-      {/* <ConfirmDialog
-        title="Seat Guest"
-        description="Assign table & seat the guest."
-        actionLabel="Seat Guest"
-        variantType="seat"
-        onConfirm={() => updateStatus("SEATED")}
+
+      {allowed.includes("SEAT") && <AssignTableDialog
+        reservation={reservation}
         trigger={
           <Button
             size="xs"
             className="bg-indigo-100 text-indigo-700 border border-indigo-300 hover:bg-indigo-200 px-1"
             disabled={reservation.status === "SEATED"}
           >
-            <Armchair className="w-3 h-3 " /> Seat
+            <Armchair className="w-3 h-3" /> Seat
           </Button>
         }
-      /> */}
-
-<AssignTableDialog
-  reservation={reservation}
-  trigger={
-    <Button
-      size="xs"
-      className="bg-indigo-100 text-indigo-700 border border-indigo-300 hover:bg-indigo-200 px-1"
-      disabled={reservation.status === "SEATED"}
-    >
-      <Armchair className="w-3 h-3" /> Seat
-    </Button>
-  }
-/>
+      />}
 
       {/* COMPLETED */}
 
-      <ConfirmDialog
+      {allowed.includes("COMPLETED") && <ConfirmDialog
         title="Mark as Completed?"
         description="The reservation will be marked as completed."
         actionLabel="Complete Reservation"
@@ -102,10 +88,10 @@ export default function StatusActions({ reservation }: { reservation: any }) {
             <CheckCircle className="w-3 h-3 " /> Done
           </Button>
         }
-      />
+      />}
 
       {/* CANCELLED */}
-      <ConfirmDialog
+      {allowed.includes("CANCEL") && <ConfirmDialog
         title="Cancel Reservation?"
         description="This will cancel the reservation. This action cannot be undone."
         actionLabel="Cancel Reservation"
@@ -120,11 +106,11 @@ export default function StatusActions({ reservation }: { reservation: any }) {
             <X className="w-3 h-3 " /> Cancel
           </Button>
         }
-      />
+      />}
 
       {/* NO SHOW */}
 
-      <ConfirmDialog
+      {allowed.includes("NO_SHOW") && <ConfirmDialog
         title="Mark as No-Show?"
         description="The guest will be marked as a no-show."
         actionLabel="Mark No-Show"
@@ -139,7 +125,7 @@ export default function StatusActions({ reservation }: { reservation: any }) {
             <Ban className="w-3 h-3 " /> No-Show
           </Button>
         }
-      />
+      />}
     </div>
   );
 }

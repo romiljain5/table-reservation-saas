@@ -12,7 +12,8 @@ export async function PATCH(
     where: { id },
     data: {
       status: "SEATED",
-      tableId,
+      tableId: tableId,
+      seatedAt: new Date(),
     },
   });
 

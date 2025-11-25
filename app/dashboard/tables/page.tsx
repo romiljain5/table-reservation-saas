@@ -1,5 +1,6 @@
 import TablesList from "@/components/dashboard/TablesList";
 import AddTableModal from "@/components/dashboard/AddTableModal";
+import TableLayout from "@/components/tables/TableLayout";
 
 export default function TablesPage() {
   return (
@@ -16,6 +17,7 @@ export default function TablesPage() {
       </div>
 
       <TablesList />
+      <TableLayout/>
     </div>
   );
 }

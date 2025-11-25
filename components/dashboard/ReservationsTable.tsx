@@ -4,6 +4,7 @@ import { useRestaurantStore } from "@/store/restaurantStore";
 import { useQuery } from "@tanstack/react-query";
 import EditReservationModal from "./EditReservationModal";
 import StatusActions from "./StatusActions";
+import SeatTimer from "@/components/reservations/SeatTimer";
 
 function statusChipClass(status: string) {
   switch (status) {
@@ -97,6 +98,11 @@ export default function ReservationsTable() {
                 >
                   {res.status}
                 </span>
+                {res.status === "SEATED" && (
+                  <div className="mt-1">
+                    <SeatTimer seatedAt={res.seatedAt} />
+                  </div>
+                )}
               </td>
               <td className="px-4 py-2">
                 <EditReservationModal reservation={res} />
@@ -104,7 +110,6 @@ export default function ReservationsTable() {
               <td className="px-4 py-2 space-x-2">
                 <StatusActions reservation={res} />
               </td>
-
             </tr>
           ))}
         </tbody>
