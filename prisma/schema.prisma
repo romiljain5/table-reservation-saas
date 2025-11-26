@@ -25,16 +25,45 @@ enum TableShape {
   CIRCLE
 }
 
+enum RestaurantStatus {
+  ACTIVE
+  INACTIVE
+  DRAFT
+}
 model Restaurant {
   id        String   @id @default(cuid())
   name      String
   slug      String   @unique
+  phone     String?  @unique
+  hoursJson Json?
+
+  // Optional Location Fields
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  state        String?
+  zipCode      String?
+  country      String? @default("USA")
+
+  // Branding
+  logoUrl     String?
+  websiteUrl  String?
+
+  // Setup Progress
+  isPublished Boolean   @default(false)
+  setupStep   Int       @default(1) // 1=info, 2=layout, 3=hours, 4=done
+
+  // Status (Soft control)
+  status RestaurantStatus @default(DRAFT)
+
+  // Audit
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  // Relations
   tables       Table[]
   reservations Reservation[]
-  admins       User[]
+  admins       User[] @relation("RestaurantAdmins")
 }
 
 model User {
@@ -42,11 +71,12 @@ model User {
   email        String      @unique
   name         String?
   role         UserRole    @default(STAFF)
-  password     String
+  password     String?
   restaurantId String?
-  restaurant   Restaurant? @relation(fields: [restaurantId], references: [id])
 
   reservations Reservation[]
+
+  Restaurant Restaurant[] @relation("RestaurantAdmins")
 }
 
 model Table {

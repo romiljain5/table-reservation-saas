@@ -4,97 +4,140 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🌱 Seeding database...");
 
+  // Utility function
+  const rand = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
   // -----------------------------
-  // 1️⃣ Restaurants
+  // 1️⃣ Restaurants (5)
   // -----------------------------
-  const restaurants = await prisma.restaurant.createMany({
-    data: [
-      { name: "Clayton Downtown", slug: "clayton-downtown" },
-      { name: "Riverfront", slug: "riverfront" },
-      { name: "Airport", slug: "airport" },
-    ],
+  const restaurantsData = [
+    {
+      name: "Clayton Downtown",
+      slug: "clayton-downtown",
+      phone: "+1 555-000-1111",
+      status: "ACTIVE",
+      setupStep: 4,
+      isPublished: true,
+      addressLine1: "123 Clayton Ave",
+      city: "St. Louis",
+      state: "MO",
+      zipCode: "63105",
+    },
+    {
+      name: "Riverfront Bistro",
+      slug: "riverfront-bistro",
+      phone: "+1 555-222-3333",
+      status: "ACTIVE",
+      setupStep: 4,
+      isPublished: true,
+      addressLine1: "200 Riverfront Way",
+      city: "St. Louis",
+      state: "MO",
+      zipCode: "63102",
+    },
+    {
+      name: "Airport Lounge",
+      slug: "airport-lounge",
+      phone: "+1 555-444-5555",
+      status: "ACTIVE",
+      setupStep: 3,
+      isPublished: true,
+      addressLine1: "Terminal 2",
+      city: "St. Louis",
+      state: "MO",
+      zipCode: "63145",
+    },
+    {
+      name: "Midtown Grill",
+      slug: "midtown-grill",
+      phone: "+1 555-666-7777",
+      status: "ACTIVE",
+      setupStep: 4,
+      isPublished: true,
+      addressLine1: "500 Market St",
+      city: "St. Louis",
+      state: "MO",
+      zipCode: "63103",
+    },
+    {
+      name: "Suburban Eatery",
+      slug: "suburban-eatery",
+      phone: "+1 555-888-9999",
+      status: "DRAFT",
+      setupStep: 2,
+      isPublished: false,
+      addressLine1: "780 Valley Rd",
+      city: "Town & Country",
+      state: "MO",
+      zipCode: "63017",
+    },
+  ];
+
+  await prisma.restaurant.createMany({
+    data: restaurantsData,
     skipDuplicates: true,
   });
 
-  // Fetch restaurant IDs
-  const clayton = await prisma.restaurant.findUnique({
-    where: { slug: "clayton-downtown" },
-  });
-
-  const riverfront = await prisma.restaurant.findUnique({
-    where: { slug: "riverfront" },
-  });
-
-  const airport = await prisma.restaurant.findUnique({
-    where: { slug: "airport" },
-  });
+  const restaurants = await prisma.restaurant.findMany();
 
   // -----------------------------
-  // 2️⃣ Tables
+  // 2️⃣ Tables (8 per restaurant)
   // -----------------------------
-  await prisma.table.createMany({
-    data: [
-      // Clayton Downtown
-      { number: 1, name: "Window Table", seats: 2, restaurantId: clayton.id },
-      { number: 2, name: "Booth A", seats: 4, restaurantId: clayton.id },
-      { number: 3, name: "Center Table", seats: 4, restaurantId: clayton.id },
-      { number: 4, name: "Corner Table", seats: 6, restaurantId: clayton.id },
+  let tablesAll = [];
 
-      // Riverfront
-      { number: 1, name: "Patio 1", seats: 2, restaurantId: riverfront.id },
-      { number: 2, name: "Patio 2", seats: 4, restaurantId: riverfront.id },
-      { number: 3, name: "Indoor 1", seats: 4, restaurantId: riverfront.id },
+  for (const r of restaurants) {
+    const tables = Array.from({ length: 8 }).map((_, i) => ({
+      number: i + 1,
+      name: `Table #${i + 1}`,
+      seats: rand([2, 4, 6]),
+      x: rand([50, 120, 200, 280]),
+      y: rand([50, 140, 230, 310]),
+      restaurantId: r.id,
+    }));
 
-      // Airport
-      { number: 1, name: "Lounge A", seats: 2, restaurantId: airport.id },
-      { number: 2, name: "Lounge B", seats: 6, restaurantId: airport.id },
-    ],
-    skipDuplicates: true,
-  });
-
-  // Fetch tables for reservations
-  const claytonTables = await prisma.table.findMany({
-    where: { restaurantId: clayton.id },
-  });
+    await prisma.table.createMany({ data: tables });
+    tablesAll.push(...await prisma.table.findMany({ where: { restaurantId: r.id } }));
+  }
 
   // -----------------------------
-  // 3️⃣ Reservations
+  // 3️⃣ Customers (Unique)
   // -----------------------------
-  await prisma.reservation.createMany({
-    data: [
-      {
-        guestName: "John Doe",
-        phone: "+1 555-123-4567",
-        partySize: 2,
-        date: new Date("2025-11-26"),
-        time: "18:30",
-        status: "CONFIRMED",
-        restaurantId: clayton.id,
-        tableId: claytonTables[0]?.id,
-      },
-      {
-        guestName: "Emily Smith",
-        phone: "+1 555-987-6543",
-        partySize: 4,
-        date: new Date("2025-11-26"),
-        time: "19:00",
-        status: "PENDING",
-        restaurantId: clayton.id,
-        tableId: claytonTables[1]?.id,
-      },
-      {
-        guestName: "Mark Johnson",
-        phone: "+1 555-222-3333",
-        partySize: 6,
-        date: new Date("2025-11-27"),
-        time: "20:00",
-        status: "SEATED",
-        seatedAt: new Date(Date.now() - 35 * 60 * 1000), // 35 min ago
-        restaurantId: clayton.id,
-        tableId: claytonTables[3]?.id,
-      },
-    ],
-  });
+  const customersData = [
+    { name: "John Doe", phone: "+1 555-123-4567", tags: ["VIP"], visits: 5 },
+    { name: "Emily Smith", phone: "+1 555-987-6543", tags: ["Allergy: Nuts"], visits: 3 },
+    { name: "Mark Johnson", phone: "+1 555-222-3333", tags: [], visits: 2 },
+    { name: "Sarah Lee", phone: "+1 555-777-8888", tags: ["Regular"], visits: 8 },
+    { name: "David Kim", phone: "+1 555-444-7777", tags: ["Family"], visits: 4 },
+  ];
+
+  await prisma.customer.createMany({ data: customersData, skipDuplicates: true });
+  const customers = await prisma.customer.findMany();
+
+  // -----------------------------
+  // 4️⃣ Reservations (10 per restaurant)
+  // -----------------------------
+  const statuses = ["PENDING", "CONFIRMED", "SEATED", "COMPLETED"];
+  const times = ["18:00", "18:30", "19:00", "20:00", "21:00"];
+
+  for (const r of restaurants) {
+    const tables = tablesAll.filter((t) => t.restaurantId === r.id);
+
+    const reservations = Array.from({ length: 10 }).map(() => {
+      const cust = rand(customers);
+      return {
+        guestName: cust.name,
+        phone: cust.phone,
+        partySize: rand([2, 3, 4, 5, 6]),
+        date: new Date("2025-11-26T00:00:00Z"),
+        time: rand(times),
+        status: rand(statuses),
+        restaurantId: r.id,
+        tableId: rand(tables)?.id,
+      };
+    });
+
+    await prisma.reservation.createMany({ data: reservations });
+  }
 
   console.log("🎉 Seed completed successfully!");
 }
@@ -104,6 +147,4 @@ main()
     console.error("❌ Error seeding:", e);
     process.exit(1);
   })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+  .finally(async () => prisma.$disconnect());

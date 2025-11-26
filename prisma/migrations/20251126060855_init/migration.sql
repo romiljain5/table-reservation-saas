@@ -5,6 +5,9 @@ CREATE TYPE "TableStatus" AS ENUM ('AVAILABLE', 'RESERVED', 'OCCUPIED', 'DIRTY')
 CREATE TYPE "TableShape" AS ENUM ('RECTANGLE', 'CIRCLE');
 
 -- CreateEnum
+CREATE TYPE "RestaurantStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'DRAFT');
+
+-- CreateEnum
 CREATE TYPE "UserRole" AS ENUM ('OWNER', 'MANAGER', 'STAFF', 'CUSTOMER', 'HOST', 'SERVER');
 
 -- CreateEnum
@@ -15,6 +18,19 @@ CREATE TABLE "Restaurant" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
+    "phone" TEXT,
+    "hoursJson" JSONB,
+    "addressLine1" TEXT,
+    "addressLine2" TEXT,
+    "city" TEXT,
+    "state" TEXT,
+    "zipCode" TEXT,
+    "country" TEXT DEFAULT 'USA',
+    "logoUrl" TEXT,
+    "websiteUrl" TEXT,
+    "isPublished" BOOLEAN NOT NULL DEFAULT false,
+    "setupStep" INTEGER NOT NULL DEFAULT 1,
+    "status" "RestaurantStatus" NOT NULL DEFAULT 'DRAFT',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -27,7 +43,7 @@ CREATE TABLE "User" (
     "email" TEXT NOT NULL,
     "name" TEXT,
     "role" "UserRole" NOT NULL DEFAULT 'STAFF',
-    "password" TEXT NOT NULL,
+    "password" TEXT,
     "restaurantId" TEXT,
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
@@ -87,17 +103,31 @@ CREATE TABLE "Customer" (
     CONSTRAINT "Customer_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "_RestaurantAdmins" (
+    "A" TEXT NOT NULL,
+    "B" TEXT NOT NULL,
+
+    CONSTRAINT "_RestaurantAdmins_AB_pkey" PRIMARY KEY ("A","B")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "Restaurant_slug_key" ON "Restaurant"("slug");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Restaurant_phone_key" ON "Restaurant"("phone");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Customer_phone_key" ON "Customer"("phone");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Customer_email_key" ON "Customer"("email");
 
--- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_restaurantId_fkey" FOREIGN KEY ("restaurantId") REFERENCES "Restaurant"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+-- CreateIndex
+CREATE INDEX "_RestaurantAdmins_B_index" ON "_RestaurantAdmins"("B");
 
 -- AddForeignKey
 ALTER TABLE "Table" ADD CONSTRAINT "Table_restaurantId_fkey" FOREIGN KEY ("restaurantId") REFERENCES "Restaurant"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -113,3 +143,9 @@ ALTER TABLE "Reservation" ADD CONSTRAINT "Reservation_restaurantId_fkey" FOREIGN
 
 -- AddForeignKey
 ALTER TABLE "Reservation" ADD CONSTRAINT "Reservation_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "Customer"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_RestaurantAdmins" ADD CONSTRAINT "_RestaurantAdmins_A_fkey" FOREIGN KEY ("A") REFERENCES "Restaurant"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_RestaurantAdmins" ADD CONSTRAINT "_RestaurantAdmins_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

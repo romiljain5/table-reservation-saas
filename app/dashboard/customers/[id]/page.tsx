@@ -22,7 +22,7 @@ export default function CustomerDetailPage() {
 
   return (
     <div className="space-y-8 p-6">
-            {/* Back Button */}
+      {/* Back Button */}
       <button
         onClick={() => router.back()}
         className="rounded-xl border bg-white shadow-sm p-3 flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-slate-900 cursor-pointer transition mb-2"

@@ -1,45 +1,54 @@
-// src/app/dashboard/page.tsx
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
 import StatCard from "@/components/dashboard/StatCard";
 import ReservationsTable from "@/components/dashboard/ReservationsTable";
 
 export default function DashboardPage() {
-  // Dummy data for now – later we’ll connect Prisma/API
+  const { data, isLoading } = useQuery({
+    queryKey: ["dashboard-stats"],
+    queryFn: async () => {
+      const res = await fetch("/api/dashboard");
+      return res.json();
+    },
+  });
+
+  if (isLoading) return "Loading dashboard...";
+
   const stats = [
     {
       label: "Reservations Today",
-      value: "32",
-      sublabel: "+8 vs yesterday",
+      value: data?.reservationsToday ?? 0,
+      sublabel: data?.resChangeToday ?? "",
     },
     {
       label: "Seated Guests",
-      value: "76",
-      sublabel: "Across all locations",
+      value: data?.seatedGuests ?? 0,
+      sublabel: "Across all restaurants",
     },
     {
       label: "No-show Rate",
-      value: "3.8%",
+      value: `${data?.noShowRate ?? "0"}%`,
       sublabel: "Last 7 days",
     },
     {
       label: "Avg. Party Size",
-      value: "3.2",
+      value: data?.avgPartySize ?? "-",
       sublabel: "Today",
     },
   ];
 
   return (
-    <div className="space-y-8">
-      {/* Page header */}
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          Overview
-        </h1>
+    <div className="space-y-8 p-6">
+      {/* Header */}
+      <header className="flex flex-col gap-2">
+        <h1 className="text-2xl font-semibold tracking-tight">Overview</h1>
         <p className="text-sm text-slate-500">
           Live snapshot of reservations across all restaurants.
         </p>
-      </div>
+      </header>
 
-      {/* Stats grid */}
+      {/* Stats */}
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => (
           <StatCard
@@ -51,7 +60,7 @@ export default function DashboardPage() {
         ))}
       </section>
 
-      {/* Today’s reservations table */}
+      {/* Reservations Today */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
@@ -60,14 +69,12 @@ export default function DashboardPage() {
               Upcoming parties across all locations.
             </p>
           </div>
-          {/* Placeholder for filters/search, we’ll wire later */}
-          <div className="flex gap-2">
-            <input
-              type="text"
-              placeholder="Search guest or restaurant..."
-              className="h-9 w-56 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-slate-900/5"
-            />
-          </div>
+
+          <input
+            type="text"
+            placeholder="Search guest or restaurant..."
+            className="h-9 w-56 rounded-md border border-slate-200 bg-white px-3 text-sm outline-none focus:ring-2 focus:ring-slate-900/5"
+          />
         </div>
 
         <ReservationsTable />
