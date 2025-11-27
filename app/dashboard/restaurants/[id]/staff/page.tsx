@@ -6,11 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useState } from "react";
+import useSound from "use-sound";
 
 export default function RestaurantStaffPage() {
   const { id } = useParams();
   const queryClient = useQueryClient();
   const [email, setEmail] = useState("");
+  const [play] = useSound("/sounds/success.mp3");
 
   const { data: staff = [], isLoading } = useQuery({
     queryKey: ["staff", id],
@@ -30,11 +32,39 @@ export default function RestaurantStaffPage() {
       return res.json();
     },
     onSuccess: () => {
+      play();
       toast.success("Invite sent!");
       setEmail("");
       queryClient.invalidateQueries(["staff", id]);
     },
     onError: () => toast.error("Failed to invite staff"),
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: async ({ staffId }) => {
+      await fetch(`/api/restaurants/${id}/staff/${staffId}`, {
+        method: "DELETE",
+      });
+    },
+    onSuccess: () => {
+      play();
+      toast.success("Removed access");
+      queryClient.invalidateQueries(["staff", id]);
+    },
+  });
+
+  const updateRoleMutation = useMutation({
+    mutationFn: async ({ staffId, role }) => {
+      await fetch(`/api/restaurants/${id}/staff/${staffId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ role }),
+      });
+    },
+    onSuccess: () => {
+      play();
+      toast.success("Role updated!");
+      queryClient.invalidateQueries(["staff", id]);
+    },
   });
 
   // === Add this near inviteMutation ===
@@ -52,6 +82,7 @@ export default function RestaurantStaffPage() {
       return res.json();
     },
     onSuccess: () => {
+      play();
       toast.success("Restaurant published!");
       queryClient.invalidateQueries(["restaurants"]);
       window.location.href = "/dashboard/restaurants"; // 👈 redirect
@@ -94,14 +125,59 @@ export default function RestaurantStaffPage() {
         ) : (
           <ul className="divide-y">
             {staff.map((m: any) => (
-              <li key={m.id} className="py-3 flex justify-between items-center">
-                <div>
-                  <div className="font-medium">{m.name || "Unnamed User"}</div>
-                  <div className="text-sm text-slate-500">{m.email}</div>
+              <li
+                key={m.id}
+                className="py-3 grid grid-cols-[1fr_auto_auto] items-center gap-4 border-b last:border-0"
+              >
+                {/* User + Avatar */}
+                <div className="flex items-center gap-3">
+                  {/* Avatar */}
+                  <div className="h-9 w-9 rounded-full bg-slate-200 flex items-center justify-center text-xs font-semibold text-slate-600">
+                    {m.name
+                      ? m.name.charAt(0).toUpperCase()
+                      : m.email.charAt(0).toUpperCase()}
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex flex-col">
+                    <span className="font-medium">
+                      {m.name && m.name.trim().length > 0
+                        ? m.name
+                        : m.email
+                            .split("@")[0]
+                            .replace(/\./g, " ")
+                            .replace(/^\w/, (c) => c.toUpperCase())}
+                    </span>
+                    <span className="text-sm text-slate-500">{m.email}</span>
+                  </div>
                 </div>
-                <span className="text-xs px-2 py-1 rounded bg-slate-100 border">
-                  {m.role}
-                </span>
+
+                {/* Role Dropdown */}
+                <select
+                  className="border rounded px-2 py-1 text-sm bg-white"
+                  value={m.role}
+                  onChange={(e) =>
+                    updateRoleMutation.mutate({
+                      staffId: m.id,
+                      role: e.target.value,
+                    })
+                  }
+                >
+                  <option value="OWNER">Owner</option>
+                  <option value="MANAGER">Manager</option>
+                  <option value="HOST">Host</option>
+                  <option value="SERVER">Server</option>
+                  <option value="STAFF">Staff</option>
+                </select>
+
+                {/* Remove Button */}
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => removeMutation.mutate({ staffId: m.id })}
+                >
+                  Remove
+                </Button>
               </li>
             ))}
           </ul>

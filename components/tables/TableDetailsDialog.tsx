@@ -34,7 +34,7 @@ export default function TableDetailsDialog({ table, trigger, reservation }) {
     <Dialog>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
 
-      <DialogContent className="max-w-md">
+      <DialogContent className="dialog-content max-w-md">
         <DialogHeader>
           <DialogTitle>
             Table {table.number} — Seats {table.seats}

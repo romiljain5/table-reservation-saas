@@ -50,7 +50,7 @@ export default function ChangeTableDialog({ reservation, trigger }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
 
-      <DialogContent>
+      <DialogContent className="dialog-content ">
         <DialogHeader>
           <DialogTitle>Change Table</DialogTitle>
         </DialogHeader>

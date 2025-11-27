@@ -8,26 +8,27 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-import { z } from "zod";
-import { useRestaurantStore } from "@/store/restaurantStore";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRestaurantStore } from "@/store/restaurantStore";
+import { useQueryClient } from "@tanstack/react-query";
 import useSound from "use-sound";
 
 const tableSchema = z.object({
   name: z.string().min(1, "Table name is required"),
   seats: z.number().min(1, "Seats must be at least 1"),
-  number: z.number().min(1, "Seats must be at least 1"),
+  number: z.number().min(1, "Table number must be at least 1"),
+  section: z.string().optional(),
+  shape: z.enum(["RECTANGLE", "CIRCLE"]).default("RECTANGLE"),
 });
 
 export default function AddTableModal() {
   const [open, setOpen] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const queryClient = useQueryClient();
   const { restaurantId } = useRestaurantStore();
   const [play] = useSound("/sounds/success.mp3");
@@ -36,28 +37,33 @@ export default function AddTableModal() {
     resolver: zodResolver(tableSchema),
     defaultValues: {
       name: "",
+      number: 1,
       seats: 2,
+      section: "",
+      shape: "RECTANGLE",
     },
   });
 
   const onSubmit = async (values: any) => {
     try {
-      await fetch("/api/tables", {
+      setIsSaving(true);
+      const res = await fetch("/api/tables", {
         method: "POST",
-        body: JSON.stringify({
-          ...values,
-          restaurantId,
-        }),
+        body: JSON.stringify({ ...values, restaurantId }),
       });
+
+      if (!res.ok) {
+        toast.error("Failed to add table");
+        return;
+      }
+
       play();
       toast.success("Table added successfully!");
-      // Refresh table list
       queryClient.invalidateQueries(["tables", restaurantId]);
-
       setOpen(false);
       form.reset();
-    } catch (error) {
-      toast.error("Failed to add table");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -67,16 +73,31 @@ export default function AddTableModal() {
         <Button className="bg-slate-900 text-white">Add Table</Button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md dark:bg-neutral-900 dark:text-neutral-100">
         <DialogHeader>
-          <DialogTitle>Add Table</DialogTitle>
+          <DialogTitle>Add New Table</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
           {/* Table Name */}
           <div>
-            <label className="block text-sm font-medium">Table Name</label>
-            <Input {...form.register("name")} placeholder="Table 1" />
+            <label className="block text-sm font-medium">Name</label>
+            <Input
+              {...form.register("name")}
+              placeholder="Window Table"
+              className="dark:bg-neutral-800"
+            />
+          </div>
+
+          {/* Table Number */}
+          <div>
+            <label className="block text-sm font-medium">Table Number</label>
+            <Input
+              type="number"
+              min={1}
+              {...form.register("number", { valueAsNumber: true })}
+              className="dark:bg-neutral-800"
+            />
           </div>
 
           {/* Seats */}
@@ -86,22 +107,39 @@ export default function AddTableModal() {
               type="number"
               min={1}
               {...form.register("seats", { valueAsNumber: true })}
+              className="dark:bg-neutral-800"
             />
           </div>
 
-
-          {/* number */}
+          {/* Section */}
           <div>
-            <label className="block text-sm font-medium">Table Number</label>
+            <label className="block text-sm font-medium">Section (Optional)</label>
             <Input
-              type="number"
-              min={1}
-              {...form.register("number", { valueAsNumber: true })}
+              {...form.register("section")}
+              placeholder="Patio, Balcony..."
+              className="dark:bg-neutral-800"
             />
           </div>
 
-          <Button type="submit" className="w-full bg-slate-900 text-white">
-            Create Table
+          {/* Shape */}
+          <div>
+            <label className="block text-sm font-medium">Shape</label>
+            <select
+              {...form.register("shape")}
+              className="border rounded px-3 py-2 w-full dark:bg-neutral-800 dark:border-neutral-700"
+            >
+              <option value="RECTANGLE">Rectangle</option>
+              <option value="CIRCLE">Circle</option>
+            </select>
+          </div>
+
+          {/* Submit */}
+          <Button
+            type="submit"
+            disabled={isSaving}
+            className="w-full bg-slate-900 text-white hover:bg-slate-800"
+          >
+            {isSaving ? "Saving..." : "Create Table"}
           </Button>
         </form>
       </DialogContent>

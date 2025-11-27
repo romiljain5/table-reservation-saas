@@ -23,14 +23,14 @@ export async function POST(req: Request) {
       password: hashed,
       role: "MANAGER", // new accounts become managers by default
 
-      restaurant: {
+      Restaurant: {
         create: {
           name: restaurantName,
           slug: restaurantName.toLowerCase().replace(/\s+/g, "-"),
         },
       },
     },
-    include: { restaurant: true },
+    include: { Restaurant: true },
   });
 
   return Response.json({ success: true, user });

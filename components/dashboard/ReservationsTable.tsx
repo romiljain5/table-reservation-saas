@@ -1,114 +1,130 @@
 "use client";
 
+import Link from "next/link";
 import { useRestaurantStore } from "@/store/restaurantStore";
 import { useQuery } from "@tanstack/react-query";
 import EditReservationModal from "./EditReservationModal";
 import StatusActions from "./StatusActions";
 import SeatTimer from "@/components/reservations/SeatTimer";
 
-function statusChipClass(status: string) {
-  switch (status) {
-    case "CONFIRMED":
-      return "bg-emerald-50 text-emerald-700 border-emerald-100";
-    case "PENDING":
-      return "bg-amber-50 text-amber-700 border-amber-100";
-    case "CANCELLED":
-      return "bg-rose-50 text-rose-700 border-rose-100";
-    case "COMPLETED":
-      return "bg-blue-50 text-blue-700 border-blue-100";
-    case "NO_SHOW":
-      return "bg-orange-50 text-orange-700 border-orange-100";
-    case "SEATED":
-      return "bg-purple-50 text-purple-700 border-purple-100";
-    default:
-      return "bg-slate-50 text-slate-700 border-slate-100";
-  }
+const statusClasses: Record<string, string> = {
+  CONFIRMED:
+    "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300",
+  PENDING:
+    "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300",
+  CANCELLED:
+    "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300",
+  COMPLETED:
+    "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300",
+  NO_SHOW:
+    "bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300",
+  SEATED:
+    "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300",
+};
+
+function formatDate(date: string) {
+  return new Date(date).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
 }
 
-export default function ReservationsTable() {
+function formatTime(date: string, time: string) {
+  return new Date(`${date}T${time}`).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+export default function ReservationsTable({ search }: { search?: string }) {
   const { restaurantId } = useRestaurantStore();
 
   const { data: reservations = [], isLoading } = useQuery({
-    queryKey: ["reservations", restaurantId],
+    queryKey: ["reservations", { restaurantId, search }],
     queryFn: async () => {
-      const res = await fetch(`/api/reservations?restaurantId=${restaurantId}`);
+      const params = new URLSearchParams();
+      if (restaurantId) params.set("restaurantId", restaurantId);
+      if (search) params.set("search", search);
+
+      const res = await fetch(`/api/reservations?${params.toString()}`);
       return res.json();
     },
-    enabled: !!restaurantId, // fetch only when restaurant is selected
+    enabled: !!restaurantId,
   });
 
-  if (isLoading) {
+  if (!restaurantId)
     return (
-      <div className="p-6 text-center text-slate-500">
+      <div className="p-6 text-center text-slate-500 dark:text-slate-400">
+        Select a restaurant first.
+      </div>
+    );
+
+  if (isLoading)
+    return (
+      <div className="p-6 text-center text-slate-500 dark:text-slate-400">
         Loading reservations...
       </div>
     );
-  }
 
-  if (reservations.length === 0) {
+  if (reservations.length === 0)
     return (
-      <div className="p-6 text-center text-slate-500">
-        No reservations found for this restaurant.
+      <div className="p-6 text-center text-slate-500 dark:text-slate-400">
+        No reservations found.
       </div>
     );
-  }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 shadow-sm">
       <table className="min-w-full text-left text-sm">
-        <thead className="bg-slate-50">
-          <tr className="border-b border-slate-200">
-            <th className="px-4 py-2">Reservation</th>
-            <th className="px-4 py-2">Guest</th>
-            <th className="px-4 py-2">Time</th>
-            <th className="px-4 py-2">Restaurant</th>
-            <th className="px-4 py-2">Status</th>
-            <th className="px-4 py-2 font-medium text-slate-500">Actions</th>
+        <thead className="sticky top-0 bg-slate-100 dark:bg-neutral-900 text-slate-600 dark:text-slate-300 text-xs uppercase tracking-wide">
+          <tr>
+            <th className="px-4 py-3">Guest</th>
+            <th className="px-4 py-3">Party</th>
+            <th className="px-4 py-3">Time</th>
+            <th className="px-4 py-3">Restaurant</th>
+            <th className="px-4 py-3 text-center">Status / Actions</th>
           </tr>
         </thead>
+
         <tbody>
           {reservations.map((res: any) => (
             <tr
               key={res.id}
-              className="border-b border-slate-100 last:border-none hover:bg-slate-50/60"
+              className="border-b border-slate-100 dark:border-neutral-700 hover:bg-slate-50 dark:hover:bg-neutral-700 transition"
             >
-              <td className="px-4 py-2 font-mono text-[11px] uppercase">
-                {res.id}
+              <td className="px-4 py-3 font-medium">
+                <Link
+                  href={`/dashboard/customers/${res.customerId ?? ""}`}
+                  className="text-slate-900 dark:text-slate-100 hover:underline"
+                >
+                  {res.guestName}
+                </Link>
+                <div className="text-xs text-slate-500">{res.phone}</div>
               </td>
 
-              <td className="px-4 py-2">
-                <div className="text-sm font-medium">{res.guestName}</div>
-                <div className="text-xs text-slate-500">
-                  Party of {res.partySize}
-                </div>
+              <td className="px-4 py-3 text-center">{res.partySize}</td>
+
+              <td className="px-4 py-3 whitespace-nowrap">
+                {formatTime(res.date, res.time)} • {formatDate(res.date)}
               </td>
 
-              <td className="px-4 py-2">
-                {res.time} — {new Date(res.date).toLocaleDateString()}
-              </td>
+              <td className="px-4 py-3">{res.restaurant?.name}</td>
 
-              <td className="px-4 py-2">{res.restaurant?.name || "Unknown"}</td>
-
-              <td className="px-4 py-2">
+              <td className="px-4 py-3 text-center space-y-1">
                 <span
-                  className={
-                    "inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium " +
-                    statusChipClass(res.status)
-                  }
+                  className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${statusClasses[res.status]}`}
                 >
                   {res.status}
                 </span>
+
                 {res.status === "SEATED" && (
-                  <div className="mt-1">
-                    <SeatTimer seatedAt={res.seatedAt} />
-                  </div>
+                  <SeatTimer seatedAt={res.seatedAt} />
                 )}
-              </td>
-              <td className="px-4 py-2">
-                <EditReservationModal reservation={res} />
-              </td>
-              <td className="px-4 py-2 space-x-2">
-                <StatusActions reservation={res} />
+
+                <div className="flex justify-center gap-2 pt-1">
+                  <EditReservationModal reservation={res} />
+                  <StatusActions reservation={res} />
+                </div>
               </td>
             </tr>
           ))}

@@ -85,7 +85,7 @@ const [play] = useSound("/sounds/success.mp3");
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-lg">
+      <DialogContent className="dialog-content max-w-lg">
         <DialogHeader>
           <DialogTitle>Edit Reservation</DialogTitle>
         </DialogHeader>

@@ -88,7 +88,7 @@ export function AssignTableDialog({ trigger, reservation }) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
 
-      <DialogContent>
+      <DialogContent className="dialog-content ">
         <DialogHeader>
           <DialogTitle>Assign Table</DialogTitle>
           <DialogDescription>Select a table for this guest.</DialogDescription>

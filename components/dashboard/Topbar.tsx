@@ -1,47 +1,93 @@
-import { ReactNode } from "react";
+"use client";
+
+import { useTheme } from "@/context/ThemeContext";
+import { Moon, Sun, Bell, ChevronsUpDown, LogOut } from "lucide-react";
 import LogoutButton from "./LogoutButton";
 import RestaurantSwitcher from "./RestaurantSwitcher";
-import { getServerSession } from "next-auth";
-import { redirect } from "next/navigation";
+import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
-export default async function Topbar({ children }: { children: ReactNode }) {
-  const session = await getServerSession();
-
-  if (!session) redirect("/login");
-
-  const user = session.user;
+export default function Topbar({ user }: { user: any }) {
+  const { theme, toggleTheme } = useTheme();
 
   return (
-    <header className="h-16 border-b border-slate-200 bg-white/70 backdrop-blur-sm flex items-center justify-between px-4 lg:px-6">
+    <header
+      className={cn(
+        "h-16 border-b flex items-center justify-between px-4 lg:px-6 backdrop-blur-sm",
+        "border-slate-200 bg-white/70 dark:bg-neutral-900/80 dark:border-neutral-800"
+      )}
+    >
+      {/* Left */}
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-slate-700">
-          Multi-tenant Dashboard
+        <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          TableFlow Admin
         </span>
-        <span className="hidden text-xs text-slate-400 md:inline">
-          Manage reservations across all restaurants.
+        <span className="hidden md:inline text-xs text-slate-400">
+          Manage across all restaurants
         </span>
       </div>
 
+      {/* Right */}
       <div className="flex items-center gap-3">
-
+        {/* Restaurant Switcher */}
         <RestaurantSwitcher />
 
-        {/* Logout */}
-        {user && <LogoutButton />}
+        {/* Notifications */}
+        <Button variant="ghost" size="icon" className="relative">
+          <Bell size={18} />
+          {/* Notification Dot */}
+          <span className="absolute top-1 right-1 h-2 w-2 bg-red-500 rounded-full"></span>
+        </Button>
 
-        {/* User Info */}
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-l font-semibold text-slate-600">
-            {user.name ? user.name[0].toUpperCase() : "U"}
-          </div>
+        {/* User Avatar + Dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <button className="flex items-center gap-2">
+              <Avatar className="h-8 w-8 border dark:border-neutral-700">
+                <AvatarFallback>
+                  {user?.name?.[0]?.toUpperCase() || "U"}
+                </AvatarFallback>
+              </Avatar>
 
-          <div className="text-xs leading-tight">
-            <div className="font-medium text-slate-700">
-              {user.name || "User"}
+              <ChevronsUpDown size={16} className="text-slate-500 dark:text-slate-300" />
+            </button>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent align="end" className="w-44">
+            <div className="px-3 py-2 text-xs">
+              <div className="font-medium">{user?.name || "User"}</div>
+              <div className="text-slate-500">{user?.email}</div>
             </div>
-            <div className="text-slate-400">{user.email}</div>
-          </div>
-        </div>
+
+            <DropdownMenuSeparator />
+
+            {/* Theme Toggle */}
+            <DropdownMenuItem onClick={toggleTheme}>
+              {theme === "dark" ? (
+                <>
+                  <Sun size={16} className="mr-2" /> Light Mode
+                </>
+              ) : (
+                <>
+                  <Moon size={16} className="mr-2" /> Dark Mode
+                </>
+              )}
+            </DropdownMenuItem>
+
+            {/* Logout */}
+            <DropdownMenuItem asChild>
+              <LogoutButton icon={<LogOut size={16} />} />
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );

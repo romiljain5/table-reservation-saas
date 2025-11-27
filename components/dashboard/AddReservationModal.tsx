@@ -111,7 +111,7 @@ export default function AddReservationModal() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="max-w-lg">
+      <DialogContent className="dialog-content max-w-lg">
         <DialogHeader>
           <DialogTitle>Add New Reservation</DialogTitle>
         </DialogHeader>
