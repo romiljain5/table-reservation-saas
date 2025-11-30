@@ -4,6 +4,7 @@ import { useRestaurantStore } from "@/store/restaurantStore";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import EditTableModal from "./EditTableModal";
 
 export default function TablesList() {
   const { restaurantId } = useRestaurantStore();
@@ -87,9 +88,8 @@ export default function TablesList() {
 
               {/* Edit/Delete placeholder */}
               <td className="px-4 py-2 text-right space-x-2">
-                <Button variant="outline" size="sm">
-                  Edit
-                </Button>
+                <EditTableModal table={table} />
+
                 <Button variant="destructive" size="sm">
                   Delete
                 </Button>

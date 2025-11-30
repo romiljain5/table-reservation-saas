@@ -8,6 +8,9 @@ CREATE TYPE "TableShape" AS ENUM ('RECTANGLE', 'CIRCLE');
 CREATE TYPE "RestaurantStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'DRAFT');
 
 -- CreateEnum
+CREATE TYPE "ReservationSource" AS ENUM ('ONLINE', 'PHONE', 'WALK_IN', 'POS_SYNC');
+
+-- CreateEnum
 CREATE TYPE "UserRole" AS ENUM ('OWNER', 'MANAGER', 'STAFF', 'CUSTOMER', 'HOST', 'SERVER');
 
 -- CreateEnum
@@ -70,19 +73,27 @@ CREATE TABLE "Table" (
 -- CreateTable
 CREATE TABLE "Reservation" (
     "id" TEXT NOT NULL,
+    "checkInCode" TEXT,
     "guestName" TEXT NOT NULL,
     "phone" TEXT NOT NULL,
+    "email" TEXT,
     "partySize" INTEGER NOT NULL,
     "date" TIMESTAMP(3) NOT NULL,
     "time" TEXT NOT NULL,
+    "durationMins" INTEGER NOT NULL DEFAULT 90,
     "status" "ReservationStatus" NOT NULL DEFAULT 'PENDING',
+    "source" "ReservationSource" NOT NULL DEFAULT 'ONLINE',
+    "notes" TEXT,
+    "depositAmount" DOUBLE PRECISION,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "seatedAt" TIMESTAMP(3),
+    "completedAt" TIMESTAMP(3),
     "userId" TEXT,
     "tableId" TEXT,
-    "seatedAt" TIMESTAMP(3),
     "restaurantId" TEXT NOT NULL,
     "customerId" TEXT,
+    "staffId" TEXT,
 
     CONSTRAINT "Reservation_pkey" PRIMARY KEY ("id")
 );
@@ -121,6 +132,18 @@ CREATE UNIQUE INDEX "Restaurant_phone_key" ON "Restaurant"("phone");
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Reservation_checkInCode_key" ON "Reservation"("checkInCode");
+
+-- CreateIndex
+CREATE INDEX "Reservation_restaurantId_date_idx" ON "Reservation"("restaurantId", "date");
+
+-- CreateIndex
+CREATE INDEX "Reservation_status_idx" ON "Reservation"("status");
+
+-- CreateIndex
+CREATE INDEX "Reservation_customerId_idx" ON "Reservation"("customerId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Customer_phone_key" ON "Customer"("phone");
 
 -- CreateIndex
@@ -143,6 +166,9 @@ ALTER TABLE "Reservation" ADD CONSTRAINT "Reservation_restaurantId_fkey" FOREIGN
 
 -- AddForeignKey
 ALTER TABLE "Reservation" ADD CONSTRAINT "Reservation_customerId_fkey" FOREIGN KEY ("customerId") REFERENCES "Customer"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Reservation" ADD CONSTRAINT "Reservation_staffId_fkey" FOREIGN KEY ("staffId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_RestaurantAdmins" ADD CONSTRAINT "_RestaurantAdmins_A_fkey" FOREIGN KEY ("A") REFERENCES "Restaurant"("id") ON DELETE CASCADE ON UPDATE CASCADE;

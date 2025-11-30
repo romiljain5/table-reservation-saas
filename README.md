@@ -47,6 +47,9 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 - prisma - ORM
 - openssl rand -base64 32 --> to generate NEXTAUTH_SECRET and save in .env
 
+### When changing schema run below 2
+- npx prisma generate
+- npx prisma migrate dev -n "reservation-enhancements"
 
 ### Dependencies
 ```bash
@@ -74,4 +77,29 @@ MANAGER	Manage staff, tables, reservations
 HOST	Only reservations & seating
 WAITER	View reservations only
 CUSTOMER	Only booking widget (later)
+```
+
+```
+🔒 Admin-only routes (already have):
+Page	URL
+Admin dashboard	/dashboard
+Manage reservations	/dashboard/reservations
+Tables layout	/dashboard/restaurants/[id]/layout
+Hours	/dashboard/restaurants/[id]/hours
+Staff	/dashboard/restaurants/[id]/staff
+Settings	/dashboard/settings
+```
+
+```pgsql
+app/
+ ├── dashboard/            → Admin (private)
+ ├── restaurants/          → Public browse
+ │     └── [slug]/         → Public restaurant page
+ └── reserve/              → Booking wizard
+       └── [slug]/
+            ├── page.tsx   → Guest + Date
+            ├── time/
+            ├── details/
+            └── success/
+
 ```

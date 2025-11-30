@@ -7,8 +7,11 @@ import WeeklyReservationsChart from "./weeklyReservationsChart";
 import SeatedNoShowChart from "./SeatedNoShowChart";
 import RestaurantPerformanceChart from "./RestaurantPerformanceChart";
 import HourlyHeatmapChart from "./HourlyHeatmapChart";
+import { useState } from "react";
 
 export default function DashboardPage() {
+  const [search, setSearch] = useState("");
+
   const { data, isLoading } = useQuery({
     queryKey: ["dashboard-stats"],
     queryFn: async () => {
@@ -81,10 +84,14 @@ export default function DashboardPage() {
             placeholder="Search guest • restaurant"
             className="h-9 w-56 rounded-md border border-slate-200 bg-white dark:bg-neutral-800 px-3 text-sm 
             focus:ring-2 focus:ring-slate-900/10 dark:border-neutral-700"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
           />
         </div>
 
-        <ReservationsTable />
+        {/* 🔥 Pass search into component */}
+        <ReservationsTable search={search} />
+
       </section>
 
       {/* Analytics Section */}

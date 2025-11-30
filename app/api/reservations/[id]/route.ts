@@ -24,3 +24,33 @@ export async function PATCH(
 
   return NextResponse.json(updated);
 }
+
+export async function GET(
+  req: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const reservation = await prisma.reservation.findUnique({
+      where: { id: params.id },
+      include: {
+        restaurant: true,
+        customer: true,
+      },
+    });
+
+    if (!reservation) {
+      return NextResponse.json(
+        { error: "Reservation not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(reservation);
+  } catch (err: any) {
+    console.error("Error fetching reservation:", err);
+    return NextResponse.json(
+      { error: err.message || "Failed to load reservation" },
+      { status: 500 }
+    );
+  }
+}

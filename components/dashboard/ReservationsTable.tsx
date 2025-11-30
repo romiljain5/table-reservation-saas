@@ -39,8 +39,12 @@ function formatTime(date: string, time: string) {
 export default function ReservationsTable({ search }: { search?: string }) {
   const { restaurantId } = useRestaurantStore();
 
-  const { data: reservations = [], isLoading } = useQuery({
-    queryKey: ["reservations", { restaurantId, search }],
+  const {
+    data: reservations = [],
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ["reservations", restaurantId, search],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (restaurantId) params.set("restaurantId", restaurantId);
@@ -50,6 +54,7 @@ export default function ReservationsTable({ search }: { search?: string }) {
       return res.json();
     },
     enabled: !!restaurantId,
+    staleTime: 0,
   });
 
   if (!restaurantId)
@@ -112,7 +117,9 @@ export default function ReservationsTable({ search }: { search?: string }) {
 
               <td className="px-4 py-3 text-center space-y-1">
                 <span
-                  className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${statusClasses[res.status]}`}
+                  className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${
+                    statusClasses[res.status]
+                  }`}
                 >
                   {res.status}
                 </span>

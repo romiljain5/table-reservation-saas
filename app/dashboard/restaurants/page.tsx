@@ -5,9 +5,12 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useRestaurantStore } from "@/store/restaurantStore";
 import { cn } from "@/lib/utils";
+import useSound from "use-sound";
+import { toast } from "sonner";
 
 export default function RestaurantsPage() {
   const { setRestaurant } = useRestaurantStore();
+  const [play] = useSound("/sounds/success.mp3");
 
   const { data = [], isLoading } = useQuery({
     queryKey: ["restaurants"],
@@ -112,6 +115,21 @@ export default function RestaurantsPage() {
 
                   {/* Actions */}
                   <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        const slug = r.name.toLowerCase().replace(/\s+/g, "-");
+                        const publicUrl = `${window.location.origin}/r/${slug}`;
+                        navigator.clipboard.writeText(publicUrl);
+
+                        play();
+                        toast.success("Link for reservation copied!");
+                      }}
+                    >
+                      Copy Link
+                    </Button>
+
                     <Link
                       href={`/dashboard/restaurants/${r.id}/layout`}
                       className="text-indigo-600 hover:underline"
