@@ -80,7 +80,7 @@ const [play] = useSound("/sounds/success.mp3");
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="text-xs">
+        <Button variant="outline" className="text-xs hover:cursor-pointer">
           Edit
         </Button>
       </DialogTrigger>

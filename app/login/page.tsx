@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import Link from "next/link";
+import { motion } from "framer-motion";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -34,16 +36,19 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="h-screen flex items-center justify-center px-4">
-      <form
+    <div className="h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 px-4">
+      <motion.form
+        initial={{ opacity: 0, y: 30 }}
+        animate={{ opacity: 1, y: 0 }}
         onSubmit={submit}
-        className="w-full max-w-sm bg-white p-6 rounded-lg shadow-md space-y-4"
+        className="w-full max-w-sm backdrop-blur-xl bg-white/10 p-8 rounded-xl shadow-xl border border-white/20 space-y-5"
       >
-        <h1 className="text-xl font-semibold text-center">Log In</h1>
+        <h1 className="text-3xl font-bold text-center text-white drop-shadow-md">Log In</h1>
 
         <Input
           type="email"
           placeholder="Email"
+          className="bg-white/20 text-white placeholder:text-white/70"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
@@ -51,14 +56,22 @@ export default function LoginPage() {
         <Input
           type="password"
           placeholder="Password"
+          className="bg-white/20 text-white placeholder:text-white/70"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        <Button type="submit" className="w-full" disabled={loading}>
+        <Button type="submit" disabled={loading} className="w-full bg-white text-black hover:bg-white/90">
           {loading ? "Logging in..." : "Login"}
         </Button>
-      </form>
+
+        <p className="text-center text-sm text-white/90 pt-2">
+          New user?{" "}
+          <Link href="/signup" className="font-semibold underline text-white">
+            Create an account
+          </Link>
+        </p>
+      </motion.form>
     </div>
   );
 }

@@ -2,7 +2,7 @@
 CREATE TYPE "TableStatus" AS ENUM ('AVAILABLE', 'RESERVED', 'OCCUPIED', 'DIRTY');
 
 -- CreateEnum
-CREATE TYPE "TableShape" AS ENUM ('RECTANGLE', 'CIRCLE');
+CREATE TYPE "TableShape" AS ENUM ('RECTANGLE', 'CIRCLE', 'SQUARE');
 
 -- CreateEnum
 CREATE TYPE "RestaurantStatus" AS ENUM ('ACTIVE', 'INACTIVE', 'DRAFT');

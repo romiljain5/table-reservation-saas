@@ -22,18 +22,41 @@ const statusClasses: Record<string, string> = {
     "bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300",
 };
 
-function formatDate(date: string) {
-  return new Date(date).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
+function getTimeZoneAbbrev(date: Date, tz: string) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: tz,
+    timeZoneName: "short",
+  }).formatToParts(date);
+
+  const tzPart = parts.find((p) => p.type === "timeZoneName");
+  return tzPart ? tzPart.value : "";
 }
 
-function formatTime(date: string, time: string) {
-  return new Date(`${date}T${time}`).toLocaleTimeString([], {
+function formatTime(date: string, time: string, tz: string) {
+  const dateOnly = date.split("T")[0];
+  const fullDate = new Date(`${dateOnly}T${time}:00`);
+
+  const formatted = new Intl.DateTimeFormat("en-US", {
     hour: "2-digit",
     minute: "2-digit",
-  });
+    hour12: true,
+    timeZone: tz,
+  }).format(fullDate);
+
+  const abbrev = getTimeZoneAbbrev(fullDate, tz);
+
+  return `${formatted} ${abbrev}`;
+}
+
+function formatDate(date: string, tz: string) {
+  const dateOnly = date.split("T")[0];
+
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: tz,
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date(dateOnly));
 }
 
 export default function ReservationsTable({ search }: { search?: string }) {
@@ -87,7 +110,9 @@ export default function ReservationsTable({ search }: { search?: string }) {
             <th className="px-4 py-3">Party</th>
             <th className="px-4 py-3">Time</th>
             <th className="px-4 py-3">Restaurant</th>
-            <th className="px-4 py-3 text-center">Status / Actions</th>
+            <th className="px-4 py-3 text-center">Status</th>
+            <th className="px-4 py-3 text-center">Actions</th>
+            <th className="px-4 py-3 text-center">Edit</th>
           </tr>
         </thead>
 
@@ -104,13 +129,23 @@ export default function ReservationsTable({ search }: { search?: string }) {
                 >
                   {res.guestName}
                 </Link>
-                <div className="text-xs text-slate-500">{res.phone}</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">
+                  {res.phone}
+                </div>
               </td>
 
               <td className="px-4 py-3 text-center">{res.partySize}</td>
 
-              <td className="px-4 py-3 whitespace-nowrap">
-                {formatTime(res.date, res.time)} • {formatDate(res.date)}
+              <td className="px-6 py-4 whitespace-nowrap font-medium text-slate-700 dark:text-slate-300">
+                <div className="flex items-center gap-1">
+                  <span>
+                    {formatTime(res.date, res.time, res.restaurant.timeZone)}
+                  </span>
+                  <span className="mx-1 opacity-50">•</span>
+                  <span className="opacity-80">
+                    {formatDate(res.date, res.restaurant.timeZone)}
+                  </span>
+                </div>
               </td>
 
               <td className="px-4 py-3">{res.restaurant?.name}</td>
@@ -127,10 +162,17 @@ export default function ReservationsTable({ search }: { search?: string }) {
                 {res.status === "SEATED" && (
                   <SeatTimer seatedAt={res.seatedAt} />
                 )}
+              </td>
 
+              <td className="px-4 py-3 text-center space-y-1">
+                <div className="flex justify-center gap-2 pt-1">
+                  <StatusActions reservation={res} />
+                </div>
+              </td>
+
+              <td className="px-4 py-3 text-center space-y-1">
                 <div className="flex justify-center gap-2 pt-1">
                   <EditReservationModal reservation={res} />
-                  <StatusActions reservation={res} />
                 </div>
               </td>
             </tr>

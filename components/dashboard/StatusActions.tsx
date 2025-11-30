@@ -39,7 +39,7 @@ export default function StatusActions({ reservation }: { reservation: any }) {
       {/* PENDING */}
       <Button
         size="xs"
-        className="bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200 px-1"
+        className="bg-slate-100 text-slate-700 border border-slate-300 hover:cursor-pointer hover:bg-slate-200 px-1.5 py-1"
         disabled={reservation.status === "PENDING"}
         onClick={() => updateStatus("PENDING")}
       >
@@ -49,7 +49,7 @@ export default function StatusActions({ reservation }: { reservation: any }) {
       {/* CONFIRMED */}
       {allowed.includes("CONFIRM") && <Button
         size="xs"
-        className="bg-emerald-100 text-emerald-700 border border-emerald-300 hover:bg-emerald-200 px-1"
+        className="bg-emerald-100 text-emerald-700 border border-emerald-300 hover:cursor-pointer hover:bg-emerald-200 px-1.5 py-1"
         disabled={reservation.status === "CONFIRMED"}
         onClick={() => updateStatus("CONFIRMED")}
       >
@@ -63,7 +63,7 @@ export default function StatusActions({ reservation }: { reservation: any }) {
         trigger={
           <Button
             size="xs"
-            className="bg-indigo-100 text-indigo-700 border border-indigo-300 hover:bg-indigo-200 px-1"
+            className="bg-indigo-100 text-indigo-700 border border-indigo-300 hover:cursor-pointer hover:bg-indigo-200 px-1.5 py-1"
             disabled={reservation.status === "SEATED"}
           >
             <Armchair className="w-3 h-3" /> Seat
@@ -82,7 +82,7 @@ export default function StatusActions({ reservation }: { reservation: any }) {
         trigger={
           <Button
             size="xs"
-            className="bg-blue-100 text-blue-700 border border-blue-300 hover:bg-blue-200 px-1"
+            className="bg-blue-100 text-blue-700 border border-blue-300 hover:cursor-pointer hover:bg-blue-200 px-1.5 py-1"
             disabled={reservation.status === "COMPLETED"}
           >
             <CheckCircle className="w-3 h-3 " /> Done
@@ -100,7 +100,7 @@ export default function StatusActions({ reservation }: { reservation: any }) {
         trigger={
           <Button
             size="xs"
-            className="bg-rose-100 text-rose-700 border border-rose-300 hover:bg-rose-200 px-1"
+            className="bg-rose-100 text-rose-700 border border-rose-300 hover:cursor-pointer hover:bg-rose-200 px-1.5 py-1"
             disabled={reservation.status === "CANCELLED"}
           >
             <X className="w-3 h-3 " /> Cancel
@@ -119,7 +119,7 @@ export default function StatusActions({ reservation }: { reservation: any }) {
         trigger={
           <Button
             size="xs"
-            className="bg-amber-100 text-amber-700 border border-amber-300 hover:bg-amber-200 px-1"
+            className="bg-amber-100 text-amber-700 border border-amber-300 hover:cursor-pointer hover:bg-amber-200 px-1.5 py-1"
             disabled={reservation.status === "NO_SHOW"}
           >
             <Ban className="w-3 h-3 " /> No-Show
