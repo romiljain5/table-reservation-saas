@@ -26,10 +26,14 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden lg:flex lg:w-64 xl:w-72 flex-col
-      border-r border-slate-200 dark:border-neutral-800
-      bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm"
-    >
+<aside
+  className="hidden lg:flex lg:w-64 xl:w-72 flex-col
+  fixed top-0 left-0 h-screen
+  border-r border-slate-200 dark:border-neutral-800
+  bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm z-50"
+>
+
+
       {/* Brand */}
       <div className="h-16 px-6 flex items-center border-b 
         border-slate-200 dark:border-neutral-800"
