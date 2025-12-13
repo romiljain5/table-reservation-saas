@@ -3,18 +3,18 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { MotionDiv } from "@/components/motion/MotionDiv";
 
-export default async function RestaurantPublicPage({
-  params,
-}: {
-  params: { slug: string };
+export default async function RestaurantPublicPage(props: {
+  params: Promise<{ slug: string }>;
 }) {
-  if (!params?.slug) return notFound();
+  const { slug } = await props.params;
+
+  if (!slug) return notFound();
 
   let restaurant = null;
 
   try {
     restaurant = await prisma.restaurant.findUnique({
-      where: { slug: params.slug },
+      where: { slug: slug },
     });
   } catch (error) {
     console.error("DB Error:", error);

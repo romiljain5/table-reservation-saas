@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { useSession } from "next-auth/react";
 
 export default function SignupPage() {
   const [name, setName] = useState("");
@@ -14,6 +15,24 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
+
+  const { data: session, status } = useSession();
+
+  // 🔥 Redirect if logged in
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.replace("/dashboard");
+    }
+  }, [status, router]);
+
+  // Wait while checking session
+  if (status === "loading") {
+    return (
+      <div className="h-screen flex items-center justify-center text-white">
+        Checking session...
+      </div>
+    );
+  }
 
   const submit = async (e: any) => {
     e.preventDefault();

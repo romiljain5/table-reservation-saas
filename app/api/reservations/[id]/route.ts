@@ -27,11 +27,12 @@ export async function PATCH(
 
 export async function GET(
   req: Request,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
+  const { id } = await context.params;
     const reservation = await prisma.reservation.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         restaurant: true,
         customer: true,

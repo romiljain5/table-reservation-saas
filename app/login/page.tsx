@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -14,6 +15,24 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  const { data: session, status } = useSession();
+
+  // 🔥 If already logged in → go to dashboard
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.replace("/dashboard");
+    }
+  }, [status, router]);
+
+  // Avoid rendering login form when session is loading
+  if (status === "loading") {
+    return (
+      <div className="h-screen flex items-center justify-center text-white">
+        Checking session...
+      </div>
+    );
+  }
 
   const submit = async (e: any) => {
     e.preventDefault();

@@ -15,7 +15,11 @@ import {
 
 const navItems = [
   { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Reservations", href: "/dashboard/reservations", icon: CalendarDays },
+  {
+    label: "Reservations",
+    href: "/dashboard/reservations",
+    icon: CalendarDays,
+  },
   { label: "Tables", href: "/dashboard/tables", icon: Utensils },
   { label: "Customers", href: "/dashboard/customers", icon: Users },
   { label: "Restaurants", href: "/dashboard/restaurants", icon: Store },
@@ -26,21 +30,23 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-<aside
-  className="hidden lg:flex lg:w-64 xl:w-72 flex-col
+    <aside
+      className="hidden lg:flex lg:w-64 xl:w-72 flex-col
   fixed top-0 left-0 h-screen
   border-r border-slate-200 dark:border-neutral-800
   bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm z-50"
->
-
-
+    >
       {/* Brand */}
-      <div className="h-16 px-6 flex items-center border-b 
-        border-slate-200 dark:border-neutral-800"
+      <div
+        className="h-16 px-6 flex items-center border-b 
+  border-slate-200 dark:border-neutral-800"
       >
-        <span className="text-lg font-semibold tracking-tight">
+        <Link
+          href="/"
+          className="text-lg font-semibold tracking-tight hover:opacity-80 transition"
+        >
           Table<span className="text-slate-500 dark:text-slate-300">Flow</span>
-        </span>
+        </Link>
       </div>
 
       {/* Navigation */}

@@ -2,20 +2,14 @@ import prisma from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { MotionDiv } from "@/components/motion/MotionDiv";
 
-export default async function CheckInPage({
-  params,
-}: {
-  params: { code: string };
-}) {
+export default async function CheckInPage(props: { params: { code: string } }) {
+  const { params } = await props;
   const reservation = await prisma.reservation.findFirst({
     where: { checkInCode: params.code },
     include: { restaurant: true },
   });
 
   if (!reservation) return notFound();
-
-  // Optionally auto-seat if within time window
-  // await prisma.reservation.update({ ... })
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-100">
@@ -27,9 +21,8 @@ export default async function CheckInPage({
         <p className="text-xs uppercase tracking-[0.2em] text-emerald-400 mb-2">
           Welcome to {reservation.restaurant.name}
         </p>
-        <h1 className="text-2xl font-semibold mb-3">
-          You&apos;re checked in 🎉
-        </h1>
+
+        <h1 className="text-2xl font-semibold mb-3">You&apos;re checked in 🎉</h1>
 
         <p className="text-sm text-slate-300 mb-4">
           {reservation.guestName}, party of {reservation.partySize}
