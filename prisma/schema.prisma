@@ -38,6 +38,7 @@ model Restaurant {
   slug      String  @unique
   phone     String? @unique
   hoursJson Json?
+  holidaysJson Json? // Array of {date: string, reason: string}
 
   // Optional Location Fields
   addressLine1 String?
@@ -50,6 +51,7 @@ model Restaurant {
   // Branding
   logoUrl    String?
   websiteUrl String?
+  cuisines   String[] @default([])
 
   // Setup Progress
   isPublished Boolean @default(false)

@@ -7,6 +7,7 @@ import { useRestaurantStore } from "@/store/restaurantStore";
 import { cn } from "@/lib/utils";
 import useSound from "use-sound";
 import { toast } from "sonner";
+import EditRestaurantModal from "@/components/dashboard/EditRestaurantModal";
 
 export default function RestaurantsPage() {
   const { setRestaurant } = useRestaurantStore();
@@ -75,12 +76,19 @@ export default function RestaurantsPage() {
                     <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-neutral-700 flex items-center justify-center text-xs font-semibold">
                       {initials}
                     </div>
-                    <Link
-                      href={`/dashboard/restaurants/${r.id}`}
-                      className="text-slate-800 dark:text-slate-100 hover:underline"
-                    >
-                      {r.name}
-                    </Link>
+                    <div className="flex flex-col">
+                      <Link
+                        href={`/dashboard/restaurants/${r.id}`}
+                        className="text-slate-800 dark:text-slate-100 hover:underline"
+                      >
+                        {r.name}
+                      </Link>
+                      {Array.isArray(r.cuisines) && r.cuisines.length > 0 && (
+                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                          {r.cuisines.join(", ")}
+                        </p>
+                      )}
+                    </div>
                   </td>
 
                   {/* Phone */}
@@ -115,6 +123,8 @@ export default function RestaurantsPage() {
 
                   {/* Actions */}
                   <td className="px-4 py-3 text-right space-x-2 whitespace-nowrap">
+                    <EditRestaurantModal restaurant={r} />
+
                     <Button
                       variant="ghost"
                       size="sm"

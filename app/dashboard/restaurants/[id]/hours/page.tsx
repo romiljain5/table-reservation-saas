@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import HolidaysManager from "@/components/dashboard/HolidaysManager";
 
 type DayKey =
   | "monday"
@@ -325,6 +326,14 @@ export default function RestaurantHoursPage() {
             ))}
           </tbody>
         </table>
+      </section>
+
+      {/* Holidays / Blocked Dates */}
+      <section className="rounded-xl border bg-white dark:bg-neutral-900 shadow-sm p-4">
+        <HolidaysManager
+          restaurantId={id as string}
+          initialHolidays={restaurant.holidaysJson || []}
+        />
       </section>
 
       {/* Footer actions */}

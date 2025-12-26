@@ -6,6 +6,7 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { useQuery } from "@tanstack/react-query";
 import { Coffee, Calendar, Users, Tag, Truck, Star } from "lucide-react";
 
 export default function LandingPage() {
@@ -186,6 +187,23 @@ export default function LandingPage() {
               <FeatureCard icon={<Truck size={20} />} title="POS Integration">
                 Sync pre-orders with kitchen or POS instantly.
               </FeatureCard>
+            </div>
+          </div>
+        </section>
+
+        {/* BROWSE RESTAURANTS (Public) */}
+        <section className="py-16">
+          <div className="max-w-6xl mx-auto px-6">
+            <h2 className="text-2xl font-semibold text-center">Browse Restaurants</h2>
+            <p className="text-center text-slate-500 dark:text-slate-400 mt-2 max-w-2xl mx-auto">
+              Discover restaurants near you — view menus and reserve a table.
+            </p>
+
+            <PublicRestaurantsPreview />
+            <div className="mt-6 flex justify-center">
+              <Link href="/restaurants" className="text-sm text-indigo-600 hover:underline">
+                View all restaurants →
+              </Link>
             </div>
           </div>
         </section>
@@ -372,5 +390,45 @@ function PriceCard({ title, price, features, featured = false }: any) {
         </Link>
       </div>
     </motion.div>
+  );
+}
+
+function PublicRestaurantsPreview() {
+  const { data, isLoading } = useQuery({
+    queryKey: ["public-restaurants-preview"],
+    queryFn: async () => {
+      const res = await fetch("/api/restaurants/public");
+      if (!res.ok) return [];
+      return res.json();
+    },
+  });
+
+  if (isLoading) return <div className="mt-6 text-center">Loading restaurants...</div>;
+
+  const restaurants: any[] = Array.isArray(data)
+    ? data
+    : data && Array.isArray((data as any).data)
+    ? (data as any).data
+    : [];
+
+  if (!restaurants || restaurants.length === 0)
+    return <p className="mt-6 text-center text-sm text-slate-500">No restaurants available.</p>;
+
+  return (
+    <div className="mt-8 grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+      {restaurants.slice(0, 3).map((r: any) => (
+        <Link
+          key={r.id}
+          href={`/restaurants/${r.slug}`}
+          className="block rounded-xl border bg-white dark:bg-neutral-900 p-4 hover:shadow transition"
+        >
+          <div className="h-36 bg-slate-100 dark:bg-neutral-800 rounded-md mb-3" />
+          <h4 className="font-semibold">{r.name}</h4>
+          <p className="text-xs text-slate-500 mt-1">
+            {r.city || ""}{r.cuisines && r.cuisines.length ? ` · ${r.cuisines.join(', ')}` : ''}
+          </p>
+        </Link>
+      ))}
+    </div>
   );
 }

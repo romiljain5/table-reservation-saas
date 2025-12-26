@@ -47,6 +47,9 @@ export async function PATCH(
         country: body.country ?? undefined,
         logoUrl: body.logoUrl ?? undefined,
         websiteUrl: body.websiteUrl ?? undefined,
+        hoursJson: body.hoursJson ?? undefined,
+        holidaysJson: body.holidaysJson ?? undefined,
+        cuisines: body.cuisines ?? undefined,
       },
     });
 
