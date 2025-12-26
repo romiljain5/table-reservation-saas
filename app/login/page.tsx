@@ -9,11 +9,13 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { ForgotPasswordModal } from "@/components/auth/ForgotPasswordModal";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const router = useRouter();
 
   const { data: session, status } = useSession();
@@ -54,6 +56,11 @@ export default function LoginPage() {
     router.push("/dashboard");
   };
 
+  const handleForgotClick = () => {
+    console.log("Forgot password button clicked"); // Debug log
+    setForgotPasswordOpen(true);
+  };
+
   return (
     <div className="h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500 px-4">
       <motion.form
@@ -84,12 +91,25 @@ export default function LoginPage() {
           {loading ? "Logging in..." : "Login"}
         </Button>
 
+        <button
+          type="button"
+          onClick={handleForgotClick}
+          className="w-full text-center text-sm text-white/80 hover:text-white underline transition-colors"
+        >
+          Forgot Password?
+        </button>
+
         <p className="text-center text-sm text-white/90 pt-2">
           New user?{" "}
           <Link href="/signup" className="font-semibold underline text-white">
             Create an account
           </Link>
         </p>
+
+        <ForgotPasswordModal
+          open={forgotPasswordOpen}
+          onOpenChange={setForgotPasswordOpen}
+        />
       </motion.form>
     </div>
   );
