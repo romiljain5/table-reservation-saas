@@ -1,9 +1,11 @@
 "use client";
 
+import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import Link from "next/link";
 import { isDateBlocked } from "@/lib/holidaysHelper";
+import { fetchImageForRestaurant } from "@/lib/unsplash";
 
 export default function PublicRestaurantPage() {
   const { slug } = useParams();
@@ -18,6 +20,28 @@ export default function PublicRestaurantPage() {
     },
     enabled: !!slug,
   });
+
+  // photo state: prefer `restaurant.logoUrl`, else fetch from Unsplash (or fallback to source)
+  const [photo, setPhoto] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!restaurant) return;
+
+    let aborted = false;
+
+    (async () => {
+      try {
+        const url = await fetchImageForRestaurant(restaurant);
+        if (!aborted) setPhoto(url || null);
+      } catch (e) {
+        // ignore; leave photo as null
+      }
+    })();
+
+    return () => {
+      aborted = true;
+    };
+  }, [restaurant]);
 
   if (isLoading) return <div className="p-6">Loading...</div>;
   if (!restaurant) return <div className="p-6">Restaurant not found</div>;
@@ -48,9 +72,9 @@ export default function PublicRestaurantPage() {
     <div className="p-6 max-w-5xl mx-auto space-y-6">
       <div className="rounded-xl overflow-hidden">
         <div className="h-64 bg-gradient-to-r from-slate-100 to-white dark:from-neutral-800 dark:to-neutral-900 flex items-center justify-center">
-          {restaurant.logoUrl ? (
+          {(photo || restaurant.logoUrl) ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={restaurant.logoUrl} alt={restaurant.name} className="h-full w-full object-cover" />
+            <img src={photo || restaurant.logoUrl} alt={restaurant.name} className="h-full w-full object-cover" />
           ) : (
             <div className="text-4xl font-bold">{restaurant.name?.[0]?.toUpperCase()}</div>
           )}

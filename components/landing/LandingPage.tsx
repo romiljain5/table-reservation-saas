@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useTheme } from "@/context/ThemeContext";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -251,8 +251,8 @@ export default function LandingPage() {
             </p>
 
             <div className="mt-8 grid md:grid-cols-3 gap-6">
-              <PriceCard title="Starter" price="₹499/mo" features={["Online reservations", "1 location", "Email support"]} />
-              <PriceCard title="Pro" price="₹1,299/mo" featured features={["Multiple locations", "Pre-order & add-ons", "Priority support"]} />
+              <PriceCard title="Starter" price="$49/mo" features={["Online reservations", "1 location", "Email support"]} />
+              <PriceCard title="Pro" price="$129/mo" featured features={["Multiple locations", "Pre-order & add-ons", "Priority support"]} />
               <PriceCard title="Enterprise" price="Contact us" features={["Custom integrations", "SLA onboarding", "Dedicated manager"]} />
             </div>
 
@@ -402,33 +402,120 @@ function PublicRestaurantsPreview() {
       return res.json();
     },
   });
-
-  if (isLoading) return <div className="mt-6 text-center">Loading restaurants...</div>;
-
   const restaurants: any[] = Array.isArray(data)
     ? data
     : data && Array.isArray((data as any).data)
     ? (data as any).data
     : [];
 
+  // For a small number of preview cards, fetch Unsplash search results
+  // using the public access key and cache them locally in component state.
+  const [imagesMap, setImagesMap] = useState<Record<string, string>>({});
+
+ 
+  useEffect(() => {
+    const preview = restaurants.slice(0, 3);
+    if (preview.length === 0) return;
+
+    let aborted = false;
+
+    (async () => {
+      const key = process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY;
+      const nextMap: Record<string, string> = {};
+
+      await Promise.all(
+        preview.map(async (r: any) => {
+          if (r.logoUrl) {
+            nextMap[r.id] = r.logoUrl;
+            return;
+          }
+
+          // build a list of candidate queries to improve hit-rate (try name+restaurant, city+restaurant, name, cuisine, fallback)
+          const rawCandidates = [
+            r.name ? `${r.name} restaurant` : null,
+            r.city ? `${r.city} restaurant` : null,
+            r.name || null,
+            (r.cuisines && r.cuisines[0]) || null,
+            "food",
+          ].filter(Boolean) as string[];
+
+          // helper to sanitize a query
+          const sanitize = (s: string) => s.replace(/[^\w\s,-]/g, "").trim();
+
+          let found = false;
+
+          try {
+            if (key) {
+              for (const raw of rawCandidates) {
+                const q = sanitize(raw);
+                if (!q) continue;
+                const url = `https://api.unsplash.com/search/photos?query=${encodeURIComponent(
+                  q
+                )}&per_page=1&orientation=landscape&client_id=${encodeURIComponent(key)}`;
+                const res = await fetch(url);
+                if (!res.ok) continue;
+                const json = await res.json();
+                const photo = json.results && json.results[0];
+                if (photo && photo.urls && photo.urls.regular) {
+                  nextMap[r.id] = photo.urls.regular;
+                  found = true;
+                  break;
+                }
+              }
+            }
+          } catch (e) {
+            // if API errors, we'll fallback to source.unsplash below
+          }
+
+          if (!found) {
+            // choose the first non-empty candidate for the Source fallback
+            const fallback = encodeURIComponent(sanitize(rawCandidates[0] || "restaurant"));
+            nextMap[r.id] = `https://source.unsplash.com/800x600/?restaurant,${fallback}`;
+          }
+        })
+      );
+
+      if (!aborted) setImagesMap((prev) => ({ ...prev, ...nextMap }));
+    })();
+
+    return () => {
+      aborted = true;
+    };
+  }, [restaurants]);
+  if (isLoading) return <div className="mt-6 text-center">Loading restaurants...</div>;
+
   if (!restaurants || restaurants.length === 0)
     return <p className="mt-6 text-center text-sm text-slate-500">No restaurants available.</p>;
 
   return (
     <div className="mt-8 grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-      {restaurants.slice(0, 3).map((r: any) => (
-        <Link
-          key={r.id}
-          href={`/restaurants/${r.slug}`}
-          className="block rounded-xl border bg-white dark:bg-neutral-900 p-4 hover:shadow transition"
-        >
-          <div className="h-36 bg-slate-100 dark:bg-neutral-800 rounded-md mb-3" />
-          <h4 className="font-semibold">{r.name}</h4>
-          <p className="text-xs text-slate-500 mt-1">
-            {r.city || ""}{r.cuisines && r.cuisines.length ? ` · ${r.cuisines.join(', ')}` : ''}
-          </p>
-        </Link>
-      ))}
+      {restaurants.slice(0, 3).map((r: any) => {
+        const queryTerm = (r.cuisines && r.cuisines[0]) || r.name || "food";
+        const photoSrc = imagesMap[r.id] || r.logoUrl || `https://source.unsplash.com/800x600/?restaurant,${encodeURIComponent(
+          queryTerm
+        )}`;
+
+        return (
+          <Link
+            key={r.id}
+            href={`/restaurants/${r.slug}`}
+            className="block rounded-xl border bg-white dark:bg-neutral-900 p-4 hover:shadow transition"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={photoSrc}
+              alt={r.name}
+              loading="lazy"
+              className="h-36 w-full object-cover rounded-md mb-3"
+            />
+
+            <h4 className="font-semibold">{r.name}</h4>
+            <p className="text-xs text-slate-500 mt-1">
+              {r.city || ""}{r.cuisines && r.cuisines.length ? ` · ${r.cuisines.join(', ')}` : ''}
+            </p>
+          </Link>
+        );
+      })}
     </div>
   );
 }
